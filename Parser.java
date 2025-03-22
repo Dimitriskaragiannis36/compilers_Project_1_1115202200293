@@ -45,9 +45,10 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     }
 
     //κανόνας (1)
-    private void exp() throws IOException {
+    private int exp() throws IOException {
         term();   
-        exp2();  
+        exp2();
+        return 0;  
     }
 
     //κανόνας (2,3,4) 
@@ -60,9 +61,10 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     }
 
     //κανόνας (5)
-    private void term() throws IOException {
-        factor();   
-        term2();  
+    private int term() throws IOException {
+        int value = factor();   
+        term2(); 
+        return value; 
     }
 
     //κανόνας (6)
@@ -80,15 +82,19 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     }
 
     //κανόνας (8,9)   //δεν έβαλα ακόμα κανόνα 13-22
-    private void factor() throws IOException {
+    private int factor() throws IOException {
         if (Character.isDigit(lookahead)) {
+            int value = lookahead - '0';  //χαρακτήρας γίνεται αριθμός
             consume(lookahead);  //καταναλώνει το num
+            return value;
         } else if (lookahead == '(') {
             consume('(');
-            exp();  //ακολουθεί exp
-            consume(')');  
+            int value = exp();  //ακολουθεί exp
+            consume(')'); 
+            return value; 
         } else {
             error();  
+            return 0; 
         }
     }
 
