@@ -1,4 +1,3 @@
-package PART1;
 import java.io.IOException;  //βιβλιοθήκη για εξαίρεση-αν δεν την βάλω θα έχω θέμα
 import java.io.InputStream;  //βιβλιοθήκη για εισαγωγή από πληκτρολόγιο
 
