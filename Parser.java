@@ -16,19 +16,19 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             System.out.println("Ξεκινάμε...");  
             System.out.printf("αρχικό σύμβολο: %c\n", lookahead); //αλλιώς εμφανίζει ASCII 
             exp(); 
-            if (lookahead == '\n' || lookahead == -1) {  
+            /*if (lookahead == '\n' || lookahead == -1) {  
                 System.out.println("τέλος δοκιμής");  
             } else {
                 System.out.println("έως εδώ");
                 error();  //συνάρτηση σφάλματος
                 
-            }
+            }*/
         } catch (IOException e) {  
             System.err.println("IO error: " + e.getMessage());  //εκτυπώνει το μήνυμα σφάλματος
         }
     }
 
-    // Μέθοδος για μετάβαση στον επόμενο χαρακτήρα
+    //Συνάρτηση για μετάβαση στον επόμενο χαρακτήρα (τρώει το 1;)
     private void consume(int expected) throws IOException {
         if (lookahead == expected) {
             lookahead = in.read();
@@ -51,7 +51,12 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (2,3,4) 
     private void exp2() throws IOException {
-      //έπεται
+        if (lookahead == '+' || lookahead == '-') {
+            consume(lookahead);  //καταναλώνει το σύμβολο + ή -
+            System.out.printf("κατανάλωσα το %c\n", lookahead);
+            term();  
+            exp2(); //πρέπει να δω με την δεξιά παρένθεση
+        }
     }
 
     //κανόνας (5)
@@ -69,6 +74,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     private void factor() throws IOException {
         if (Character.isDigit(lookahead)) {
             consume(lookahead);  //καταναλώνει το num
+            System.out.printf("κατανάλωσα το %c\n", lookahead);
         } else if (lookahead == '(') {
             consume('(');
             exp();  //ακολουθεί exp
