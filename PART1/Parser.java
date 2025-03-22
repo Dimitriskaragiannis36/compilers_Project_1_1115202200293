@@ -74,7 +74,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         return term2(value); 
     }
 
-    //κανόνας (6)
+    //κανόνας (6,7)
     private int term2(int left) throws IOException {
         if (lookahead == '*') {
             consume('*');  //καταναλώνω το πρώτο *
@@ -90,12 +90,10 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         return left;
     }
 
-    //κανόνας (8,9)   //δεν έβαλα ακόμα κανόνα 13-22
+    //κανόνας (8,9)   
     private int factor() throws IOException {
         if (Character.isDigit(lookahead)) {
-            int value = lookahead - '0';  //χαρακτήρας γίνεται αριθμός
-            consume(lookahead);  //καταναλώνει το num
-            return value;
+            return num();
         } else if (lookahead == '(') {
             consume('(');
             int value = exp();  //ακολουθεί exp
@@ -105,6 +103,32 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             error();  
             return 0; 
         }
+    }
+
+    //κανόνας (10) 
+    private int num() throws IOException {
+        int value = digit(); 
+        return num2(value);  
+    }
+
+    //κανόνας (11,12) 
+    private int num2(int left) throws IOException {
+        if (Character.isDigit(lookahead)) { 
+            int value = digit(); 
+            value = left * 10 + value; //δεν είμαι σίγουρος για αυτό
+            return num2(value);  //παράθεση ψηφίων
+        }
+        return left; 
+    }
+
+    //κανόνας (13-22)
+    private int digit() throws IOException {
+        if (!Character.isDigit(lookahead)) {
+            error();  
+        }
+        int value = lookahead - '0';  
+        consume(lookahead);  
+        return value;
     }
 
     //main
