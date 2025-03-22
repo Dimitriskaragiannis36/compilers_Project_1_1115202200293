@@ -14,9 +14,8 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     public void parse() {
         try {
             System.out.println("Εκκίνηση αριθμομηχανής");  
-            System.out.printf("Aρχικό σύμβολο: %c\n", lookahead); //αλλιώς εμφανίζει ASCII 
             int result = exp(); 
-            if (lookahead == '$') { //για EOF περιμένω piazza
+            if (lookahead == -1 || lookahead == '\n'|| lookahead == '\r') { //για EOF σύμφωνα με project (newline or EOF)
                 System.out.println("Τέλος υπολογισμού");
                 System.out.println(result);  
             } else {
@@ -33,7 +32,10 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     private void consume(int expected) throws IOException {
         if (lookahead == expected) {
             System.out.printf("κατανάλωσα το %c\n", lookahead);
-            lookahead = in.read(); //δίνει το επόμενο τοκεν
+            lookahead = in.read(); // δίνει το επόμενο τοκεν
+            if (lookahead == '\r') {  //αν είναι \r (Windows), διάβασε και το \n
+                //lookahead = in.read(); //δίνει το επόμενο τοκεν
+            }    
         } else {
             error();
         }
@@ -64,7 +66,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             } 
             return exp2(left);
         }
-        if (lookahead == '$' || lookahead == ')') {  //για το FOLLOW
+        if (lookahead == -1 || lookahead == ')' || lookahead != '\n' || lookahead != '\r') {  //για το FOLLOW
             return left;
         }
         error();
@@ -90,7 +92,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
                 error();  //αν υπάρχει μόνο ένα *, είναι συντακτικό λάθος
             }
         }
-        if (lookahead != '+' && lookahead != '-' && lookahead != ')' && lookahead != '$') {
+        if (lookahead != '+' && lookahead != '-' && lookahead != ')' && lookahead != -1 && lookahead != '\n' && lookahead != '\r') {
             error();  //έλεγχος FOLLOW
         }
         return left;
@@ -124,8 +126,8 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     //κανόνας (11,12) 
     private int num2(int left) throws IOException {
         if (Character.isDigit(lookahead)) {  
-            left = left * 10 + digit(); //δεν είμαι σίγουρος για αυτό
-            return num2(left);  //παράθεση ψηφίων
+            left = left * 10 + digit(); //παράθεση ψηφίων
+            return num2(left);  
         }
         return left; 
     }
@@ -135,7 +137,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         if (!Character.isDigit(lookahead)) {
             error();  
         }
-        int value = lookahead - '0';  
+        int value = lookahead - '0'; //μετατροπή συμβόλου σε αριθμό 
         consume(lookahead);  
         return value;
     }
