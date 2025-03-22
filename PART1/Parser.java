@@ -15,14 +15,15 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         try {
             System.out.println("Ξεκινάμε...");  
             System.out.printf("αρχικό σύμβολο: %c\n", lookahead); //αλλιώς εμφανίζει ASCII 
-            exp(); 
-            /*if (lookahead == '\n' || lookahead == -1) {  
-                System.out.println("τέλος δοκιμής");  
+            int result = exp(); 
+            if (lookahead == '$') {  
+                System.out.println("τέλος δοκιμής");
+                System.out.println(result);  
             } else {
                 System.out.println("έως εδώ");
                 error();  //συνάρτηση σφάλματος
                 
-            }*/
+            }
         } catch (IOException e) {  
             System.err.println("IO error: " + e.getMessage());  //εκτυπώνει το μήνυμα σφάλματος
         }
@@ -81,7 +82,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
                 consume('*');  //πρέπει να υπάρχει και δεύτερο *
                 int right = factor();
                 int pow = (int)Math.pow(left,right);  //int γιατί γκρινιάζει για double
-                term2(pow);  
+                return term2(pow);  
             } else {
                 error();  //αν υπάρχει μόνο ένα *, είναι συντακτικό λάθος
             }
