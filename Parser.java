@@ -31,6 +31,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     //Συνάρτηση για μετάβαση στον επόμενο χαρακτήρα (τρώει το 1;)
     private void consume(int expected) throws IOException {
         if (lookahead == expected) {
+            System.out.printf("κατανάλωσα το %c\n", lookahead);
             lookahead = in.read();
         } else {
             error();
@@ -53,7 +54,6 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     private void exp2() throws IOException {
         if (lookahead == '+' || lookahead == '-') {
             consume(lookahead);  //καταναλώνει το σύμβολο + ή -
-            System.out.printf("κατανάλωσα το %c\n", lookahead);
             term();  
             exp2(); //πρέπει να δω με την δεξιά παρένθεση
         }
@@ -74,7 +74,6 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     private void factor() throws IOException {
         if (Character.isDigit(lookahead)) {
             consume(lookahead);  //καταναλώνει το num
-            System.out.printf("κατανάλωσα το %c\n", lookahead);
         } else if (lookahead == '(') {
             consume('(');
             exp();  //ακολουθεί exp
