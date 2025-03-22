@@ -14,7 +14,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     public void parse() {
         try {
             System.out.println("Ξεκινάμε...");  
-            System.out.println("αρχικό σύμβολο: " + (char) lookahead + " ");  
+            System.out.printf("αρχικό σύμβολο: %d\n", lookahead); 
             exp(); 
             if (lookahead == '\n' || lookahead == -1) {  
                 System.out.println("τέλος δοκιμής");  
@@ -26,18 +26,39 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         }
     }
 
+    // Μέθοδος για μετάβαση στον επόμενο χαρακτήρα
+    private void consume(int expected) throws IOException {
+        if (lookahead == expected) {
+            lookahead = in.read();
+        } else {
+            error();
+        }
+    }
+
     //Συνάρτηση σφάλαμτος
     private void error() {
         System.err.println("parse error"); 
         System.exit(1);  
     }
 
-    //Ο πρώτος κανόνας
+    //κανόνας (1)
     private void exp() throws IOException {
         while (lookahead != '\n' && lookahead != -1) {  
-            System.out.print((char) lookahead);  
+            System.out.print(lookahead);  
             lookahead = in.read();  
         }
+        term();   
+        exp2();  
+    }
+
+    //κανόνας (2,3,4) 
+    private void exp2() throws IOException {
+        //έπεται
+    }
+
+    //κανόνας (5)
+    private void term() throws IOException {
+        //έπεται
     }
 
     //main
