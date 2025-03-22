@@ -16,7 +16,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             System.out.println("Ξεκινάμε...");  
             System.out.printf("αρχικό σύμβολο: %c\n", lookahead); //αλλιώς εμφανίζει ASCII 
             int result = exp(); 
-            if (lookahead == -1 || lookahead == '\r') { //για EOF περιμένω piazza
+            if (lookahead == '$') { //για EOF περιμένω piazza
                 System.out.println("τέλος δοκιμής");
                 System.out.println(result);  
             } else {
@@ -55,22 +55,20 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     private int exp2(int left) throws IOException {
         if (lookahead == '+' || lookahead == '-') {
             int op = lookahead;
-            int value;
             consume(lookahead);  //καταναλώνει το σύμβολο + ή -
             int right = term();
             if (op == '+') {
-                value = left + right;
-                return exp2(value);
+                left += right;
             } else if (op == '-') {
-                value = left - right;
-                return exp2(value);
+                left -= right;
             } 
-            else {
-                return exp2(left);
-            }
-              // Αφαίρεση
+            return exp2(left);
         }
-        return left;
+        if (lookahead == '$' || lookahead == ')') {  //για το FOLLOW
+            return left;
+        }
+        error();
+        return 0;
     }
 
     //κανόνας (5)
