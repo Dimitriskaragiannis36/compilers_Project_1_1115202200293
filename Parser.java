@@ -67,17 +67,26 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (6)
     private void term2() throws IOException {
-        //έπεται
+        if (lookahead == '*') {
+            consume('*');  //καταναλώνω το πρώτο '*'
+            if (lookahead == '*') {
+                consume('*');  // Πρέπει να υπάρχει και δεύτερο '*'
+                factor();  
+                term2();  
+            } else {
+                error();  //αν υπάρχει μόνο ένα *, είναι συντακτικό λάθος
+            }
+        }
     }
 
-    //κανόνας (8,9)
+    //κανόνας (8,9)   //δεν έβαλα ακόμα κανόνα 13-22
     private void factor() throws IOException {
         if (Character.isDigit(lookahead)) {
             consume(lookahead);  //καταναλώνει το num
         } else if (lookahead == '(') {
             consume('(');
             exp();  //ακολουθεί exp
-            consume(')');  //περιμένω δεξιά παρένθεση (θα δω πως θα πάω στο επόμενο)
+            consume(')');  
         } else {
             error();  
         }
