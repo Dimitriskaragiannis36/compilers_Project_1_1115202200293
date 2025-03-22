@@ -103,7 +103,11 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         } else if (lookahead == '(') {
             consume('(');
             int value = exp();  //ακολουθεί exp
-            consume(')'); 
+            if (lookahead == ')') {
+                consume(')');
+            } else {
+                error(); //δεν είναι σίγουρο αν θα κλείσει η παρένθεση
+            } 
             return value; 
         } else {
             error();  
