@@ -1,3 +1,4 @@
+package PART1;
 import java.io.IOException;  //βιβλιοθήκη για εξαίρεση-αν δεν την βάλω θα έχω θέμα
 import java.io.InputStream;  //βιβλιοθήκη για εισαγωγή από πληκτρολόγιο
 
@@ -46,39 +47,47 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (1)
     private int exp() throws IOException {
-        term();   
-        exp2();
-        return 0;  
+        int value = term();   
+        return exp2(value); 
     }
 
     //κανόνας (2,3,4) 
-    private void exp2() throws IOException {
+    private int exp2(int left) throws IOException {
         if (lookahead == '+' || lookahead == '-') {
+            int op = lookahead;
+            int value;
             consume(lookahead);  //καταναλώνει το σύμβολο + ή -
-            term();  
-            exp2(); //πρέπει να δω με την δεξιά παρένθεση
+            int right = term();
+            if (op == '+') {
+                value = left + right;
+            } else {
+                value = left - right;
+            } 
+            return exp2(value);  // Αφαίρεση
         }
+        return left;
     }
 
     //κανόνας (5)
     private int term() throws IOException {
         int value = factor();   
-        term2(); 
-        return value; 
+        return term2(value); 
     }
 
     //κανόνας (6)
-    private void term2() throws IOException {
+    private int term2(int left) throws IOException {
         if (lookahead == '*') {
-            consume('*');  //καταναλώνω το πρώτο '*'
+            consume('*');  //καταναλώνω το πρώτο *
             if (lookahead == '*') {
-                consume('*');  // Πρέπει να υπάρχει και δεύτερο '*'
-                factor();  
-                term2();  
+                consume('*');  //πρέπει να υπάρχει και δεύτερο *
+                int right = factor();
+                int pow = (int)Math.pow(left,right);  //int γιατί γκρινιάζει για double
+                term2(pow);  
             } else {
                 error();  //αν υπάρχει μόνο ένα *, είναι συντακτικό λάθος
             }
         }
+        return left;
     }
 
     //κανόνας (8,9)   //δεν έβαλα ακόμα κανόνα 13-22
