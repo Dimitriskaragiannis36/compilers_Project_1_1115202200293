@@ -14,12 +14,14 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     public void parse() {
         try {
             System.out.println("Ξεκινάμε...");  
-            System.out.printf("αρχικό σύμβολο: %d\n", lookahead); 
+            System.out.printf("αρχικό σύμβολο: %c\n", lookahead); //αλλιώς εμφανίζει ASCII 
             exp(); 
             if (lookahead == '\n' || lookahead == -1) {  
                 System.out.println("τέλος δοκιμής");  
             } else {
+                System.out.println("έως εδώ");
                 error();  //συνάρτηση σφάλματος
+                
             }
         } catch (IOException e) {  
             System.err.println("IO error: " + e.getMessage());  //εκτυπώνει το μήνυμα σφάλματος
@@ -43,22 +45,37 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (1)
     private void exp() throws IOException {
-        while (lookahead != '\n' && lookahead != -1) {  
-            System.out.print(lookahead);  
-            lookahead = in.read();  
-        }
         term();   
         exp2();  
     }
 
     //κανόνας (2,3,4) 
     private void exp2() throws IOException {
-        //έπεται
+      //έπεται
     }
 
     //κανόνας (5)
     private void term() throws IOException {
+        factor();   
+        term2();  
+    }
+
+    //κανόνας (6)
+    private void term2() throws IOException {
         //έπεται
+    }
+
+    //κανόνας (8,9)
+    private void factor() throws IOException {
+        if (Character.isDigit(lookahead)) {
+            consume(lookahead);  //καταναλώνει το num
+        } else if (lookahead == '(') {
+            consume('(');
+            exp();  //ακολουθεί exp
+            consume(')');  //περιμένω δεξιά παρένθεση (θα δω πως θα πάω στο επόμενο)
+        } else {
+            error();  
+        }
     }
 
     //main
