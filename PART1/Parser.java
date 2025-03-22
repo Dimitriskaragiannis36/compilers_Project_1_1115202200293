@@ -13,14 +13,14 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     //Ο συντακτικός αναλυτής
     public void parse() {
         try {
-            System.out.println("Ξεκινάμε...");  
-            System.out.printf("αρχικό σύμβολο: %c\n", lookahead); //αλλιώς εμφανίζει ASCII 
+            System.out.println("Εκκίνηση αριθμομηχανής");  
+            System.out.printf("Aρχικό σύμβολο: %c\n", lookahead); //αλλιώς εμφανίζει ASCII 
             int result = exp(); 
             if (lookahead == '$') { //για EOF περιμένω piazza
-                System.out.println("τέλος δοκιμής");
+                System.out.println("Τέλος υπολογισμού");
                 System.out.println(result);  
             } else {
-                System.out.println("έως εδώ");
+                System.out.println("Σφάλμα");
                 error();  //συνάρτηση σφάλματος
                 
             }
@@ -29,11 +29,11 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         }
     }
 
-    //Συνάρτηση για μετάβαση στον επόμενο χαρακτήρα (τρώει το 1;)
+    //Συνάρτηση για μετάβαση στον επόμενο χαρακτήρα 
     private void consume(int expected) throws IOException {
         if (lookahead == expected) {
             System.out.printf("κατανάλωσα το %c\n", lookahead);
-            lookahead = in.read();
+            lookahead = in.read(); //δίνει το επόμενο τοκεν
         } else {
             error();
         }
@@ -89,6 +89,9 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             } else {
                 error();  //αν υπάρχει μόνο ένα *, είναι συντακτικό λάθος
             }
+        }
+        if (lookahead != '+' && lookahead != '-' && lookahead != ')' && lookahead != '$') {
+            error();  //έλεγχος FOLLOW
         }
         return left;
     }
