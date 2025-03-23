@@ -30,6 +30,9 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //Συνάρτηση για μετάβαση στον επόμενο χαρακτήρα 
     private void consume(int expected) throws IOException {
+        while (Character.isWhitespace(lookahead)) {  //για την αγνόηση των κενών
+            lookahead = in.read();  
+        }
         if (lookahead == expected) {
             System.out.printf("κατανάλωσα το %c\n", lookahead);
             lookahead = in.read(); // δίνει το επόμενο τοκεν
