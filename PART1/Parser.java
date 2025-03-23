@@ -13,9 +13,11 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     //Ο συντακτικός αναλυτής
     public void parse() {
         try {
-            System.out.println("Εκκίνηση αριθμομηχανής");  
-            int result = exp(); 
-            if (lookahead == -1 || lookahead == '\n'|| lookahead == '\r') { //για EOF σύμφωνα με project (newline or EOF)
+            System.out.println("Εκκίνηση αριθμομηχανής");
+            skipWhitespace(); //μπορεί να έχω κενά στην αρχή
+            int result = exp();
+            skipWhitespace(); //μπορεί να έχω κενά και στο τέλος 
+            if (lookahead == -1 || lookahead == '\n'|| lookahead == '\r'|| lookahead == ' ') { //για EOF σύμφωνα με project (newline or EOF)
                 System.out.println("Τέλος υπολογισμού");
                 System.out.println(result);  
             } else {
@@ -28,11 +30,16 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
         }
     }
 
+    //Συνάρτηση προσπέρασης κενών
+    private void skipWhitespace() throws IOException {
+        while (Character.isWhitespace(lookahead)) {
+            lookahead = in.read();
+        }
+    }
+
     //Συνάρτηση για μετάβαση στον επόμενο χαρακτήρα 
     private void consume(int expected) throws IOException {
-        while (Character.isWhitespace(lookahead)) {  //για την αγνόηση των κενών
-            lookahead = in.read();  
-        }
+        skipWhitespace();
         if (lookahead == expected) {
             System.out.printf("κατανάλωσα το %c\n", lookahead);
             lookahead = in.read(); // δίνει το επόμενο τοκεν
@@ -58,6 +65,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (2,3,4) 
     private int exp2(int left) throws IOException {
+        skipWhitespace();
         if (lookahead == '+' || lookahead == '-') {
             int op = lookahead;
             consume(lookahead);  //καταναλώνει το σύμβολο + ή -
@@ -84,6 +92,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (6,7)
     private int term2(int left) throws IOException {
+        skipWhitespace();
         if (lookahead == '*') {
             consume('*');  //καταναλώνω το πρώτο *
             if (lookahead == '*') {
@@ -103,11 +112,13 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (8,9)   
     private int factor() throws IOException {
+        skipWhitespace();
         if (Character.isDigit(lookahead)) {
             return num();
         } else if (lookahead == '(') {
             consume('(');
             int value = exp();  //ακολουθεί exp
+            skipWhitespace();
             if (lookahead == ')') {
                 consume(')');
             } else {
@@ -128,6 +139,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (11,12) 
     private int num2(int left) throws IOException {
+        skipWhitespace();
         if (Character.isDigit(lookahead)) {  
             left = left * 10 + digit(); //παράθεση ψηφίων
             return num2(left);  
@@ -137,6 +149,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //κανόνας (13-22)
     private int digit() throws IOException {
+        skipWhitespace();
         if (!Character.isDigit(lookahead)) {
             error();  
         }
