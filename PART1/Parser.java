@@ -17,7 +17,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             skipWhitespace(); //μπορεί να έχω κενά στην αρχή
             int result = exp();
             skipWhitespace(); //μπορεί να έχω κενά και στο τέλος 
-            if (lookahead == -1 || lookahead == '\n'|| lookahead == '\r'|| lookahead == ' ') { //για EOF σύμφωνα με project (newline or EOF)
+            if (lookahead == -1 || lookahead == '\n'|| lookahead == '\r') { //για EOF σύμφωνα με project (newline or EOF)
                 System.out.println("Τέλος υπολογισμού");
                 System.out.println(result);  
             } else {
@@ -32,8 +32,8 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
 
     //Συνάρτηση προσπέρασης κενών
     private void skipWhitespace() throws IOException {
-        while (Character.isWhitespace(lookahead)) {
-            lookahead = in.read();
+        while (Character.isWhitespace(lookahead) && lookahead != '\n' && lookahead != '\r') {
+            lookahead = in.read(); //για να τερματίζει ακόμα και με κενό στο τέλος
         }
     }
 
@@ -44,7 +44,7 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             System.out.printf("κατανάλωσα το %c\n", lookahead);
             lookahead = in.read(); // δίνει το επόμενο τοκεν
             if (lookahead == '\r') {  //αν είναι \r (Windows), διάβασε και το \n
-                //lookahead = in.read(); //δίνει το επόμενο τοκεν
+                lookahead = in.read(); //δίνει το επόμενο τοκεν
             }    
         } else {
             error();
