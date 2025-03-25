@@ -1,0 +1,19 @@
+// Ορισμός πακέτου
+package PART2;
+
+import java_cup.runtime.Symbol;
+
+Parser code {  
+  //κενό για την ώρα
+};
+
+terminal String STRING;
+terminal String ID;
+
+terminal IF, ELSE, PREFIX, SUFFIX;
+terminal CONCAT, REVERSE, EQ;
+
+//oρισμός μη τερματικών συμβόλων
+non terminal program;
+
+start with program;
