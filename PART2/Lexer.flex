@@ -36,6 +36,13 @@ StringLiteral  = \"([^\"\\]|\\.)*\"
 "~"        { return new Symbol(sym.REVERSE); }
 "="        { return new Symbol(sym.EQ); }
 
+//Σύμβολα
+"("        { return new Symbol(sym.LPAREN); }
+")"        { return new Symbol(sym.RPAREN); }
+"{"        { return new Symbol(sym.LBRACE); }
+"}"        { return new Symbol(sym.RBRACE); }
+","        { return new Symbol(sym.COMMA); }
+
 //Identifiers και λεκτικά (yytext η τιμή)
 {Identifier}    { return new Symbol(sym.ID, yytext()); }
 {StringLiteral} { return new Symbol(sym.STRING, yytext()); }

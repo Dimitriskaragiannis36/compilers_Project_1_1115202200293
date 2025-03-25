@@ -11,8 +11,26 @@ terminal String ID;
 
 terminal IF, ELSE, PREFIX, SUFFIX;
 terminal CONCAT, REVERSE, EQ;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
 
 //oρισμός μη τερματικών συμβόλων
-non terminal program;
+non terminal program, function_def, param_list, expr, arg_list;
 
 start with program;
+
+// Δηλώσεις συναρτήσεων
+function_def ::= ID LPAREN param_list RPAREN LBRACE expr RBRACE;
+
+// Λίστα παραμέτρων
+param_list ::= ID
+            | param_list COMMA ID;
+
+// Εκφράσεις
+expr ::= STRING
+      | ID LPAREN arg_list RPAREN
+      | expr CONCAT expr
+      | REVERSE expr;
+
+// Λίστα ορισμάτων
+arg_list ::= expr
+         | arg_list COMMA expr;
