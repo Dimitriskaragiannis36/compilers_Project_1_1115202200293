@@ -1,11 +1,10 @@
-package PART2;
-
 import java_cup.runtime.Symbol;
 
-Parser code {  
+//parser code {  
   //κενό για την ώρα
-};
+//}
 
+//Τερματικά συμβόλα
 terminal String STRING;
 terminal String ID;
 
@@ -13,24 +12,30 @@ terminal IF, ELSE, PREFIX, SUFFIX;
 terminal CONCAT, REVERSE, EQ;
 terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
 
-//oρισμός μη τερματικών συμβόλων
+//Μη τερματικά συμβόλα
 non terminal program, function_def, param_list, expr, arg_list;
 
+//Προτεραιότητες τελεστών
+precedence left CONCAT;
+precedence left REVERSE;
+
+//Αρχικό μη τερματικό σύμβολο
 start with program;
 
-// Δηλώσεις συναρτήσεων
+//Συναρτήσεις
+program ::= function_def;
 function_def ::= ID LPAREN param_list RPAREN LBRACE expr RBRACE;
 
-// Λίστα παραμέτρων
+//Λίστα παραμέτρων (την αφηνώ και κενή)
 param_list ::= ID
             | param_list COMMA ID;
 
-// Εκφράσεις
+//Εκφράσεις
 expr ::= STRING
       | ID LPAREN arg_list RPAREN
       | expr CONCAT expr
       | REVERSE expr;
 
-// Λίστα ορισμάτων
+//Λίστα ορισμάτων (την αφηνώ και κενή)
 arg_list ::= expr
          | arg_list COMMA expr;
