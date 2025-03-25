@@ -1,9 +1,5 @@
 import java_cup.runtime.Symbol;
 
-//parser code {  
-  //κενό για την ώρα
-//}
-
 //Τερματικά συμβόλα
 terminal String STRING;
 terminal String ID;
@@ -13,7 +9,8 @@ terminal CONCAT, REVERSE, EQ;
 terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
 
 //Μη τερματικά συμβόλα
-non terminal program, function_def, param_list, expr, arg_list;
+non terminal program, function_list, function_def, param_list, expr, arg_list;
+non terminal stmt_list, stmt, if_expr;
 
 //Προτεραιότητες τελεστών
 precedence left CONCAT;
@@ -22,13 +19,28 @@ precedence left REVERSE;
 //Αρχικό μη τερματικό σύμβολο
 start with program;
 
-//Συναρτήσεις
-program ::= function_def;
+//Ορισμός προγράμματος (λίστα συναρτήσεων + statements)
+program ::= function_list stmt_list;
+
+//Λίστα συναρτήσεων
+function_list ::= function_def function_list
+               | function_def;
+
+//Ορισμός συνάρτησης
 function_def ::= ID LPAREN param_list RPAREN LBRACE expr RBRACE;
 
-//Λίστα παραμέτρων (την αφηνώ και κενή)
+//Λίστα παραμέτρων (η συνάρτηση μπορεί να έχει 0+ παραμέτρους)
 param_list ::= ID
-            | param_list COMMA ID;
+            | param_list COMMA ID
+            | ;  // Κενή λίστα παραμέτρων
+
+//Λίστα εκτελέσιμων statements
+stmt_list ::= stmt stmt_list
+           | stmt;
+
+//Statements (μπορεί να είναι function call, if statement, ή απλή έκφραση)
+stmt ::= expr
+       | if_expr;
 
 //Εκφράσεις
 expr ::= STRING
@@ -38,4 +50,17 @@ expr ::= STRING
 
 //Λίστα ορισμάτων (την αφηνώ και κενή)
 arg_list ::= expr
-         | arg_list COMMA expr;
+         | arg_list COMMA expr
+         | ;
+
+//Εκφράσεις If-else
+if_expr ::= IF LPAREN bool_expr RPAREN LBRACE expr RBRACE ELSE LBRACE expr RBRACE;
+
+//Boolean εκφράσεις 
+bool_expr ::= expr EQ expr
+            | expr PREFIX expr
+            | expr SUFFIX expr;
+
+//Μετατροπή του `suffix` σε `prefix + reverse` (το είπαν στην τάξη)
+bool_expr ::= expr PREFIX expr
+            | REVERSE STRING PREFIX REVERSE expr;

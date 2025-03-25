@@ -1,2 +1,0 @@
-if "test" prefix "testing" then 1 else 0
-"hello" + ~"world"
