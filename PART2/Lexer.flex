@@ -19,8 +19,8 @@
 LineTerminator = \r|\n|\r\n
 WhiteSpace     = {LineTerminator} | [ \t\f]  \\f=form feed
 Identifier     = [a-zA-Z_][a-zA-Z_0-9]*
-StringLiteral  = \"([^\"\\]|\\.)*\"  \\θυμήσου ^=not
-                \\ escape \
+StringLiteral  = \"([^\"\\]|\\.)*\"  
+//θυμήσου ^=not, escape \
 
 //Tokens
 %%    //Κανόνες Ανάλυσης
