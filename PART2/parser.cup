@@ -13,6 +13,7 @@ non terminal program, function_list, function_def, param_list, expr, arg_list;
 non terminal stmt_list, stmt, if_expr;
 
 //Προτεραιότητες τελεστών
+precedence left IF;
 precedence left CONCAT;
 precedence left REVERSE;
 
@@ -27,12 +28,12 @@ function_list ::= function_def function_list
                | function_def;
 
 //Ορισμός συνάρτησης
-function_def ::= ID LPAREN param_list RPAREN LBRACE expr RBRACE;
+function_def ::= ID LPAREN param_list RPAREN LBRACE stmt_list RBRACE;
 
 //Λίστα παραμέτρων (η συνάρτηση μπορεί να έχει 0+ παραμέτρους)
 param_list ::= ID
             | param_list COMMA ID
-            | ;  // Κενή λίστα παραμέτρων
+            | ;  //κενό (ε)
 
 //Λίστα εκτελέσιμων statements
 stmt_list ::= stmt stmt_list
@@ -42,8 +43,8 @@ stmt_list ::= stmt stmt_list
 stmt ::= expr
        | if_expr;
 
-//Εκφράσεις
-expr ::= STRING
+//Εκφράσεις (και το ;)
+expr ::= STRING 
       | ID LPAREN arg_list RPAREN
       | expr CONCAT expr
       | REVERSE expr;
@@ -51,16 +52,12 @@ expr ::= STRING
 //Λίστα ορισμάτων (την αφηνώ και κενή)
 arg_list ::= expr
          | arg_list COMMA expr
-         | ;
+         | ; //(ε)
 
-//Εκφράσεις If-else
-if_expr ::= IF LPAREN bool_expr RPAREN LBRACE expr RBRACE ELSE LBRACE expr RBRACE;
+//Εκφράσεις If-else //(ακολουθεί else για να μην κρεμάσει)
+if_expr ::= IF LPAREN bool_expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE;
 
 //Boolean εκφράσεις 
 bool_expr ::= expr EQ expr
             | expr PREFIX expr
-            | expr SUFFIX expr;
-
-//Μετατροπή του `suffix` σε `prefix + reverse` (το είπαν στην τάξη)
-bool_expr ::= expr PREFIX expr
-            | REVERSE STRING PREFIX REVERSE expr;
+            | REVERSE expr PREFIX REVERSE expr; //μετατροπή
