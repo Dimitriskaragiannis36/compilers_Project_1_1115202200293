@@ -1,4 +1,4 @@
-import java_cup.runtime.Symbol;
+scan with parse_lex;
 
 //Τερματικά συμβόλα
 terminal String STRING;

@@ -1,0 +1,7 @@
+//ΓΙΑ LEXER
+java -jar C:\Users\dimit\Downloads\jflex-1.9.1\lib\jflex-full-1.9.1.jar lexer.flex
+
+//ΓΙΑ PARSER
+java -jar C:\Users\dimit\Downloads\java-cup-11b.jar -parser Parser -symbols sym parser.cup
+
+javac -cp "C:\Users\dimit\Downloads\java-cup-11b-runtime.jar;." *.java
