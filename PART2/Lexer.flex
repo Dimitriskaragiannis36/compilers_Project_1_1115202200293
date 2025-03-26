@@ -21,13 +21,11 @@ StringLiteral  = \"([^\"\\]|\\.)*\"
 "if"       { return new Symbol(sym.IF); }
 "else"     { return new Symbol(sym.ELSE); }
 "prefix"   { return new Symbol(sym.PREFIX); }
-"suffix"   { return new Symbol(sym.SUFFIX); }
 "and"      { return new Symbol(sym.AND); }
 
 // Τελεστές
 "+"        { return new Symbol(sym.CONCAT); }
 "~"        { return new Symbol(sym.REVERSE); }
-"="        { return new Symbol(sym.EQ); }
 
 // Σύμβολα
 "("        { return new Symbol(sym.LPAREN); }
