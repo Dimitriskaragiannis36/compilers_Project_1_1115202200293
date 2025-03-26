@@ -1,8 +1,10 @@
 parser Parser;
 
+import java_cup.runtime.Symbol;
+
 //Τερματικά συμβόλα
-terminal STRING;
-terminal ID;
+terminal String STRING;
+terminal String ID;
 
 terminal IF, ELSE, PREFIX;
 terminal CONCAT, REVERSE, AND;
@@ -18,25 +20,8 @@ precedence left AND;
 precedence left CONCAT; 
 precedence left REVERSE;
 
-Parser code {
-    private Lexer lexer;
-
-    public Parser(Lexer lexer) {
-        this.lexer = lexer;
-    }
-
-    public Symbol scan() {
-        try {
-            return lexer.yylex();
-        } catch (Exception e) {
-            System.err.println("Lexical error: " + e.getMessage());
-            return null;
-        }
-    }
-}
-
 //Αρχικό μη τερματικό σύμβολο
-start with program;
+start program;
 
 //Ορισμός προγράμματος (λίστα συναρτήσεων + statements)
 program ::= fun_stmt_list;
@@ -84,3 +69,20 @@ bool_expr ::= prefix_expr AND prefix_expr
 //Prefix για να πίασω το equal
 prefix_expr ::= expr PREFIX expr
               | REVERSE expr PREFIX expr;
+
+Parser code {
+    private Lexer lexer;
+
+    public Parser(Lexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public Symbol scan() {
+        try {
+            return lexer.scan();
+        } catch (Exception e) {
+            System.err.println("Lexical error: " + e.getMessage());
+            return null;
+        }
+    }
+}
