@@ -22,6 +22,7 @@ StringLiteral  = \"([^\"\\]|\\.)*\"
 "else"     { return new Symbol(sym.ELSE); }
 "prefix"   { return new Symbol(sym.PREFIX); }
 "suffix"   { return new Symbol(sym.SUFFIX); }
+"and"      { return new Symbol(sym.AND); }
 
 // Τελεστές
 "+"        { return new Symbol(sym.CONCAT); }
@@ -34,6 +35,7 @@ StringLiteral  = \"([^\"\\]|\\.)*\"
 "{"        { return new Symbol(sym.LBRACE); }
 "}"        { return new Symbol(sym.RBRACE); }
 ","        { return new Symbol(sym.COMMA); }
+";"        { return new Symbol(sym.SEMI); }
 
 // Αναγνωριστικά & λεκτικά
 {Identifier}    { return new Symbol(sym.ID, yytext()); }

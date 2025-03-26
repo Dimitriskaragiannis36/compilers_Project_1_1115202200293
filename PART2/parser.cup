@@ -4,17 +4,18 @@ import java_cup.runtime.Symbol;
 terminal String STRING;
 terminal String ID;
 
-terminal IF, ELSE, PREFIX, SUFFIX;
-terminal CONCAT, REVERSE, EQ;
+terminal IF, ELSE, PREFIX;
+terminal CONCAT, REVERSE, AND;
 terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
 
 //Μη τερματικά συμβόλα
 non terminal program, function_list, function_def, param_list, expr, arg_list;
-non terminal stmt_list, stmt, if_expr;
+non terminal stmt_list, stmt, if_expr, bool_expr, prefix_expr;
 
 //Προτεραιότητες τελεστών
 precedence left IF;
-precedence left CONCAT;
+precedence left AND;
+precedence left CONCAT; 
 precedence left REVERSE;
 
 //Αρχικό μη τερματικό σύμβολο
@@ -24,8 +25,8 @@ start with program;
 program ::= function_list stmt_list;
 
 //Λίστα συναρτήσεων
-function_list ::= function_def function_list
-               | function_def;
+function_list ::= function_def SEMI function_list
+               | function_def SEMI;
 
 //Ορισμός συνάρτησης
 function_def ::= ID LPAREN param_list RPAREN LBRACE stmt_list RBRACE;
@@ -58,6 +59,9 @@ arg_list ::= expr
 if_expr ::= IF LPAREN bool_expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE;
 
 //Boolean εκφράσεις 
-bool_expr ::= expr EQ expr
-            | expr PREFIX expr
-            | REVERSE expr PREFIX REVERSE expr; //μετατροπή
+bool_expr ::= prefix_expr AND prefix_expr
+           | prefix_expr;  
+
+prefix_expr ::= expr PREFIX expr
+             | REVERSE expr PREFIX expr
+             | REVERSE expr PREFIX REVERSE expr;
