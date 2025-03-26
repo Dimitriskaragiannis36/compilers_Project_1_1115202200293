@@ -36,6 +36,7 @@ import java_cup.runtime.*;
     /**
         The following two methods create java_cup.runtime.Symbol objects
     **/
+    StringBuffer stringBuffer = new StringBuffer();
     private Symbol symbol(int type) {
        return new Symbol(type, yyline, yycolumn);
     }
@@ -55,14 +56,11 @@ import java_cup.runtime.*;
    \r\n. */
 LineTerminator = \r|\n|\r\n
 Identifier     = [a-zA-Z_][a-zA-Z_0-9]*
-StringLiteral  = \"([^\"\\]|\\.)*\"
 
 /* White space is a line terminator, space, tab, or line feed. */
 WhiteSpace     = {LineTerminator} | [ \t\f]
 
-/* A literal integer is is a number beginning with a number between
-   one and nine followed by zero or more numbers between zero and nine
-   or just a zero.  */
+%state STRING
 
 %%
 /* ------------------------Lexical Rules Section---------------------- */
@@ -81,9 +79,20 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 
 
 {Identifier}    { return new Symbol(sym.ID, yytext()); }
-{StringLiteral} { return new Symbol(sym.STRING, yytext()); }
 
 {WhiteSpace} { /* just skip what was found, do nothing */ }
+
+<STRING> {
+      \"                             { yybegin(YYINITIAL);
+                                       return symbol(sym.STRING_LITERAL, stringBuffer.toString()); }
+      [^\n\r\"\\]+                   { stringBuffer.append( yytext() ); }
+      \\t                            { stringBuffer.append('\t'); }
+      \\n                            { stringBuffer.append('\n'); }
+
+      \\r                            { stringBuffer.append('\r'); }
+      \\\"                           { stringBuffer.append('\"'); }
+      \\                             { stringBuffer.append('\\'); }
+}
 
 /* No token was found for the input so through an error.  Print out an
    Illegal character message with the illegal character that was found. */

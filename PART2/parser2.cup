@@ -1,0 +1,88 @@
+parser Parser;
+
+import java_cup.runtime.Symbol;
+
+//Τερματικά συμβόλα
+terminal String STRING;
+terminal String ID;
+
+terminal IF, ELSE, PREFIX;
+terminal CONCAT, REVERSE, AND;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, SEMI;
+
+//Μη τερματικά συμβόλα
+non terminal program, fun_stmt_list, function_def, param_list, expr, arg_list, arg_list_tail;
+non terminal stmt_list, stmt, if_expr, bool_expr, prefix_expr, param_list_tail;
+
+//Προτεραιότητες τελεστών
+precedence left IF;
+precedence left AND;
+precedence left CONCAT; 
+precedence left REVERSE;
+
+//Αρχικό μη τερματικό σύμβολο
+start program;
+
+//Ορισμός προγράμματος (λίστα συναρτήσεων + statements)
+program ::= fun_stmt_list;
+
+//Λίστα συναρτήσεων + παραμέτρων (συνδυασμός γιατί δεν μειώνεται σωστά ο κανόνας)
+fun_stmt_list ::= function_def SEMI fun_stmt_list
+                | stmt fun_stmt_list
+                | function_def SEMI
+                | stmt;
+
+//Ορισμός συνάρτησης
+function_def ::= ID LPAREN param_list RPAREN LBRACE stmt_list RBRACE;
+
+//Λίστα παραμέτρων (την αφηνώ και κενή) λύση conflict με arg_list
+param_list ::= ID param_list_tail;
+param_list_tail ::= COMMA ID param_list_tail
+                  | ;  // Τερματισμός
+
+//Λίστα εκτελέσιμων statements
+stmt_list ::= stmt stmt_list
+           | stmt;
+
+//Statements (μπορεί να είναι function call, if statement, ή απλή έκφραση)
+stmt ::= expr
+       | if_expr;
+
+//Εκφράσεις (και το ;)
+expr ::= STRING 
+      | ID LPAREN arg_list RPAREN
+      | expr CONCAT expr
+      | REVERSE expr;
+
+//Λίστα ορισμάτων (την αφηνώ και κενή) λύση conflict με param_list
+arg_list ::= expr arg_list_tail;
+arg_list_tail ::= COMMA expr arg_list_tail
+                | ;  // Τερματισμός
+
+//Εκφράσεις If-else //(ακολουθεί else για να μην κρεμάσει)
+if_expr ::= IF LPAREN bool_expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE;
+
+//Boolean εκφράσεις 
+bool_expr ::= prefix_expr AND prefix_expr
+           | prefix_expr;  
+
+//Prefix για να πίασω το equal
+prefix_expr ::= expr PREFIX expr
+              | REVERSE expr PREFIX expr;
+
+Parser code {
+    private Lexer lexer;
+
+    public Parser(Lexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public Symbol scan() {
+        try {
+            return lexer.scan();
+        } catch (Exception e) {
+            System.err.println("Lexical error: " + e.getMessage());
+            return null;
+        }
+    }
+}
