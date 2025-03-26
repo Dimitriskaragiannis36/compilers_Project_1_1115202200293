@@ -9,8 +9,8 @@ terminal CONCAT, REVERSE, AND;
 terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, SEMI;
 
 //Μη τερματικά συμβόλα
-non terminal program, function_list, function_def_list, function_def, param_list;
-non terminal expr, arg_list, stmt_list, stmt, if_expr, bool_expr, prefix_expr;
+non terminal program, fun_stmt_list, function_def, param_list, expr, arg_list, arg_list_tail;
+non terminal stmt_list, stmt, if_expr, bool_expr, prefix_expr, param_list_tail;
 
 //Προτεραιότητες τελεστών
 precedence left IF;
@@ -22,22 +22,21 @@ precedence left REVERSE;
 start with program;
 
 //Ορισμός προγράμματος (λίστα συναρτήσεων + statements)
-program ::= function_list stmt_list;
+program ::= fun_stmt_list;
 
-//Λίστα συναρτήσεων
-function_list ::= function_def_list;
-
-//Λίστα ορισμού συναρτήσεων για τα conflicts
-function_def_list ::= function_def_list function_def SEMI
-                    | function_def SEMI;
+//Λίστα συναρτήσεων + παραμέτρων (συνδυασμός γιατί δεν μειώνεται σωστά ο κανόνας)
+fun_stmt_list ::= function_def SEMI fun_stmt_list
+                | stmt fun_stmt_list
+                | function_def SEMI
+                | stmt;
 
 //Ορισμός συνάρτησης
 function_def ::= ID LPAREN param_list RPAREN LBRACE stmt_list RBRACE;
 
-//Λίστα παραμέτρων (η συνάρτηση μπορεί να έχει 0+ παραμέτρους)
-param_list ::= ID
-            | param_list COMMA ID
-            | ;  //κενό (ε)
+//Λίστα παραμέτρων (την αφηνώ και κενή) λύση conflict με arg_list
+param_list ::= ID param_list_tail;
+param_list_tail ::= COMMA ID param_list_tail
+                  | ;  // Τερματισμός
 
 //Λίστα εκτελέσιμων statements
 stmt_list ::= stmt stmt_list
@@ -53,10 +52,10 @@ expr ::= STRING
       | expr CONCAT expr
       | REVERSE expr;
 
-//Λίστα ορισμάτων (την αφηνώ και κενή)
-arg_list ::= expr
-         | arg_list COMMA expr
-         | ; //(ε)
+//Λίστα ορισμάτων (την αφηνώ και κενή) λύση conflict με param_list
+arg_list ::= expr arg_list_tail;
+arg_list_tail ::= COMMA expr arg_list_tail
+                | ;  // Τερματισμός
 
 //Εκφράσεις If-else //(ακολουθεί else για να μην κρεμάσει)
 if_expr ::= IF LPAREN bool_expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE;

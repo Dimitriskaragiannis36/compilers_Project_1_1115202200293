@@ -9,7 +9,7 @@ public class ParserTest {
             //Ανάγνωση από stdin 
             Reader input;
             if (args.length > 0) {
-               input = new InputStreamReader(System.in));
+               input = new InputStreamReader(System.in);
             } 
 
             //Δημιουργία lexer & parser όπως στην τάξη
