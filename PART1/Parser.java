@@ -96,16 +96,18 @@ public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
             consume('*');  //καταναλώνω το πρώτο *
             if (lookahead == '*') {
                 consume('*');  //πρέπει να υπάρχει και δεύτερο *
-                int right = factor();
-                int pow = (int)Math.pow(left,right);  //int γιατί γκρινιάζει για double
-                return term2(pow);  
+                int right = factor();  
+                right = term2(right); //για δεξιά προτεραιότητα
+                int pow = (int) Math.pow(left, right); //int γιατί γκρινιάζει 
+                return term2(pow);                
             } else {
                 error();  //αν υπάρχει μόνο ένα *, είναι συντακτικό λάθος
             }
         }
-        if (lookahead != '+' && lookahead != '-' && lookahead != ')' && lookahead != -1 && lookahead != '\n' && lookahead != '\r') {
-            error();  //έλεγχος FOLLOW
+        if (!(lookahead == '+' || lookahead == '-' || lookahead == ')' || lookahead == -1 || lookahead == '\n' || lookahead == '\r')) {
+            error();
         }
+        
         return left;
     }
 

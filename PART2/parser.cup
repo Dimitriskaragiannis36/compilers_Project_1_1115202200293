@@ -1,8 +1,8 @@
-scan with parse_lex;
+parser Parser;
 
 //Τερματικά συμβόλα
-terminal String STRING;
-terminal String ID;
+terminal STRING;
+terminal ID;
 
 terminal IF, ELSE, PREFIX;
 terminal CONCAT, REVERSE, AND;
@@ -17,6 +17,23 @@ precedence left IF;
 precedence left AND;
 precedence left CONCAT; 
 precedence left REVERSE;
+
+Parser code {
+    private Lexer lexer;
+
+    public Parser(Lexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public Symbol scan() {
+        try {
+            return lexer.yylex();
+        } catch (Exception e) {
+            System.err.println("Lexical error: " + e.getMessage());
+            return null;
+        }
+    }
+}
 
 //Αρχικό μη τερματικό σύμβολο
 start with program;

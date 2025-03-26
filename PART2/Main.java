@@ -1,20 +1,21 @@
-import java.io.FileReader;
-import java_cup.runtime.Symbol;
+import java.io.*;
+import java_cup.runtime.*;
 
 public class Main {
     public static void main(String[] args) {
         try {
-            // Άνοιγμα αρχείου εισόδου
-            FileReader reader = new FileReader("input.txt");
+            // Δημιουργία lexer
+            Lexer lexer = new Lexer(new InputStreamReader(System.in));
 
-            // Δημιουργία lexer και parser
-            Lexer lexer = new Lexer(reader);
-            Parser parser = new Parser(lexer);
+            // Δημιουργία parser και σύνδεση με lexer
+            parser p = new parser(lexer);
 
-            // Εκτέλεση ανάλυσης
-            Symbol result = parser.parse();
+            // Εκκίνηση της ανάλυσης
+            p.parse();
+            
             System.out.println("Parsing completed successfully!");
         } catch (Exception e) {
+            System.err.println("Parsing failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
