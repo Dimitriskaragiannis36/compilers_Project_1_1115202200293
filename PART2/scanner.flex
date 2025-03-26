@@ -56,6 +56,7 @@ import java_cup.runtime.*;
    \r\n. */
 LineTerminator = \r|\n|\r\n
 Identifier     = [a-zA-Z_][a-zA-Z_0-9]*
+StringChar     = [^\n\r\"\\]
 
 /* White space is a line terminator, space, tab, or line feed. */
 WhiteSpace     = {LineTerminator} | [ \t\f]
@@ -66,6 +67,12 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 /* ------------------------Lexical Rules Section---------------------- */
 
 <YYINITIAL> {
+/* Keywords */   
+"if"       { return new Symbol(sym.IF); }
+"else"     { return new Symbol(sym.ELSE); }
+"prefix"   { return new Symbol(sym.PREFIX); }
+"and"      { return new Symbol(sym.AND); }
+
 /* operators */
 "+"        { return new Symbol(sym.CONCAT); }
 "~"        { return new Symbol(sym.REVERSE); }
@@ -75,10 +82,14 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 "}"        { return new Symbol(sym.RBRACE); }
 ","        { return new Symbol(sym.COMMA); }
 ";"        { return new Symbol(sym.SEMI); }
+
+/* Identifiers */
+{Identifier} { return symbol(sym.IDENTIFIER, yytext()); }
+
+/* String literals */
+\"         { yybegin(STRING); stringBuffer.setLength(0); }
+
 }
-
-
-{Identifier}    { return new Symbol(sym.ID, yytext()); }
 
 {WhiteSpace} { /* just skip what was found, do nothing */ }
 

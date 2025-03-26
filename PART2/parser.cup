@@ -21,11 +21,10 @@ scan with {: return s.next_token(); :};
  */
 
 /* Terminals (tokens returned by the scanner). */
-terminal String STRING;
-terminal String ID;
 terminal IF, ELSE, PREFIX;
 terminal CONCAT, REVERSE, AND;
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, SEMI;      
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, SEMI;
+terminal String     STRING_LITERAL;        // our scanner provides numbers as strings
 
 /*  Non terminals */
 non terminal program, fun_stmt_list, function_def, param_list, expr, arg_list, arg_list_tail;
@@ -48,45 +47,53 @@ fun_stmt_list ::= function_def SEMI fun_stmt_list
                 | function_def SEMI
                 | stmt;
 
+
 function_def ::= ID LPAREN param_list RPAREN LBRACE stmt_list RBRACE;
 
+
 param_list ::= ID param_list_tail;
+
+
 param_list_tail ::= COMMA ID param_list_tail
                   | ;  // Τερματισμός
+
 
 stmt_list ::= stmt stmt_list
            | stmt;
 
+
 stmt ::= expr
        | if_expr;
+
 
 expr ::= STRING 
       | ID LPAREN arg_list RPAREN
       | expr CONCAT expr
       | REVERSE expr;
 
+
 arg_list ::= expr arg_list_tail;
 arg_list_tail ::= COMMA expr arg_list_tail
                 | ;  // Τερματισμός
 
-//Εκφράσεις If-else //(ακολουθεί else για να μην κρεμάσει)
+
 if_expr ::= IF LPAREN bool_expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE;
 
-//Boolean εκφράσεις 
+ 
 bool_expr ::= prefix_expr AND prefix_expr
            | prefix_expr;  
 
-//Prefix για να πίασω το equal
+
 prefix_expr ::= expr PREFIX expr
-              | REVERSE expr PREFIX expr; 
-expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);:}
-            | expr:e SEMI                   {: System.out.println(e);:}
+              | REVERSE expr PREFIX expr;
+              
+
+expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);         :}
+            | expr:e SEMI                   {: System.out.println(e);         :}
 ;
-expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = e1+e2;       :}
-             | expr:e1 MINUS expr:e2        {: RESULT = e1-e2;       :}
-             | expr:e1 TIMES expr:e2        {: RESULT = e1*e2;       :}
-             | MINUS expr:e                 {: RESULT = -e;          :}
-  	         %prec UMINUS
-             | LPAREN expr:e RPAREN	        {: RESULT = e;           :}
-             | NUMBER:n	                    {: RESULT = n;           :}
+expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = e1+e2;                :}
+             | expr:e1 MINUS expr:e2        {: RESULT = e1-e2;                :}
+             | expr:e1 TIMES expr:e2        {: RESULT = e1*e2;                :}
+             | LPAREN expr:e RPAREN	        {: RESULT = e;                    :}
+             | STRING_LITERAL:s	            {: RESULT = Integer.parseInt(s);  :}
              ;
