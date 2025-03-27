@@ -97,12 +97,10 @@ if_expr ::= IF LPAREN bool_expr:b RPAREN LBRACE stmt_list:s1 RBRACE ELSE LBRACE 
          ;
 
  
-bool_expr ::= prefix_expr:p1 AND prefix_expr:p2   {: RESULT = p1 + " && " + p2; :}
-           | prefix_expr:p                        {: RESULT = p; :}
+bool_expr ::= expr:e1 AND expr:e2        {: RESULT = e1 + " && " + e2; :}
+           | expr:e                       {: RESULT = e; :}
            ;
 
-
-prefix_expr ::= expr:e1 PREFIX expr:e2                    {: RESULT = e1 + ".startsWith(" + e2 + ")"; :}
-              | REVERSE expr:e1 PREFIX expr:e2            {: RESULT = "reverse(" + e1 + ").startsWith(" + e2 + ")"; :}
-              | REVERSE expr:e1 PREFIX REVERSE expr:e2    {: RESULT = "reverse(" + e1 + ").startsWith(reverse(" + e2 + "))"; :}  // Υλοποίηση Suffix μέσω Reverse+Prefix
+prefix_expr ::= expr:e1 PREFIX expr:e2          {: RESULT = e1 + ".startsWith(" + e2 + ")"; :}
+              | REVERSE expr:e1 PREFIX expr:e2  {: RESULT = "reverse(" + e1 + ").startsWith(" + e2 + ")"; :}
               ;
