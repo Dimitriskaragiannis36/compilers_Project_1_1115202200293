@@ -1,88 +1,110 @@
-parser Parser;
+/* Simple +/-/* expression language; parser evaluates constant expressions on the fly*/
+/**
+ *  Package and Import Specifications
+ */
+import java_cup.runtime.*;
 
-import java_cup.runtime.Symbol;
+/**
+ *  Usercode Components
+ */
+parser code {:
+    // Connect this parser to a scanner!
+    Scanner s;
+    Parser(Scanner s){ this.s=s; }
+:}
 
-//Τερματικά συμβόλα
-terminal String STRING;
-terminal String ID;
+/* define how to connect to the scanner! */
+scan with {: return s.next_token(); :};
 
+/**
+ *  Symbol Lists
+ */
+
+/* Terminals (tokens returned by the scanner). */
 terminal IF, ELSE, PREFIX;
 terminal CONCAT, REVERSE, AND;
 terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, SEMI;
+terminal String     STRING_LITERAL;        // our scanner provides numbers as strings
+terminal String ID;
 
-//Μη τερματικά συμβόλα
-non terminal program, fun_stmt_list, function_def, param_list, expr, arg_list, arg_list_tail;
-non terminal stmt_list, stmt, if_expr, bool_expr, prefix_expr, param_list_tail;
+/*  Non terminals */
+non terminal String fun_stmt_list, function_def, stmt, if_expr, expr, bool_expr;
+non terminal String param_list, param_list_tail, arg_list, arg_list_tail;
+non terminal stmt_list;
 
-//Προτεραιότητες τελεστών
+/**
+ *  Precedence Declarations
+ */
 precedence left IF;
 precedence left AND;
 precedence left CONCAT; 
 precedence left REVERSE;
 
-//Αρχικό μη τερματικό σύμβολο
-start program;
+/**
+ *  The Grammar Rules
+ */
 
-//Ορισμός προγράμματος (λίστα συναρτήσεων + statements)
-program ::= fun_stmt_list;
+fun_stmt_list ::= function_def:f SEMI fun_stmt_list:fl   {: System.out.println(f + ";"); RESULT = f + ";\n" + fl; :}
+                | stmt:s fun_stmt_list:fl               {: System.out.println(s); RESULT = s + "\n" + fl; :}
+                | function_def:f SEMI                   {: System.out.println(f + ";"); RESULT = f + ";"; :}
+                | stmt:s                                {: System.out.println(s); RESULT = s; :}
+                ;
 
-//Λίστα συναρτήσεων + παραμέτρων (συνδυασμός γιατί δεν μειώνεται σωστά ο κανόνας)
-fun_stmt_list ::= function_def SEMI fun_stmt_list
-                | stmt fun_stmt_list
-                | function_def SEMI
-                | stmt;
 
-//Ορισμός συνάρτησης
-function_def ::= ID LPAREN param_list RPAREN LBRACE stmt_list RBRACE;
+function_def ::= ID:id LPAREN param_list:p RPAREN LBRACE stmt_list:s RBRACE 
+               {: RESULT = "function " + id + "(" + p + ") {\n" + s + "\n}"; :}
+               ;
 
-//Λίστα παραμέτρων (την αφηνώ και κενή) λύση conflict με arg_list
-param_list ::= ID param_list_tail;
-param_list_tail ::= COMMA ID param_list_tail
-                  | ;  // Τερματισμός
 
-//Λίστα εκτελέσιμων statements
-stmt_list ::= stmt stmt_list
-           | stmt;
+param_list ::= ID:id param_list_tail:pt      {: RESULT = id + pt; :}
+            |                                {: RESULT = ""; :}  /* empty parameter list */
+            ;
 
-//Statements (μπορεί να είναι function call, if statement, ή απλή έκφραση)
-stmt ::= expr
-       | if_expr;
 
-//Εκφράσεις (και το ;)
-expr ::= STRING 
-      | ID LPAREN arg_list RPAREN
-      | expr CONCAT expr
-      | REVERSE expr;
+param_list_tail ::= COMMA ID:id param_list_tail:pt     {: RESULT = ", " + id + pt; :}
+                  |                                    {: RESULT = ""; :}
+                  ;
 
-//Λίστα ορισμάτων (την αφηνώ και κενή) λύση conflict με param_list
-arg_list ::= expr arg_list_tail;
-arg_list_tail ::= COMMA expr arg_list_tail
-                | ;  // Τερματισμός
+stmt_list ::= stmt:s stmt_list:sl   {: RESULT = s + "\n" + sl; :}
+           | stmt:s                 {: RESULT = s; :}
+           ;
 
-//Εκφράσεις If-else //(ακολουθεί else για να μην κρεμάσει)
-if_expr ::= IF LPAREN bool_expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE;
 
-//Boolean εκφράσεις 
-bool_expr ::= prefix_expr AND prefix_expr
-           | prefix_expr;  
+stmt ::= expr:e              {: RESULT = e + ";"; :}
+       | if_expr:ie          {: RESULT = ie; :}
+       ;
 
-//Prefix για να πίασω το equal
-prefix_expr ::= expr PREFIX expr
-              | REVERSE expr PREFIX expr;
 
-Parser code {
-    private Lexer lexer;
+expr ::= STRING_LITERAL:s                      {: RESULT = s; :}
+      | ID:id LPAREN arg_list:al RPAREN        {: RESULT = id + "(" + al + ")"; :}
+      | expr:e1 CONCAT expr:e2                 {: RESULT = e1 + " + " + e2; :}
+      | REVERSE expr:e                         {: RESULT = "reverse(" + e + ")"; :}
+      ;
 
-    public Parser(Lexer lexer) {
-        this.lexer = lexer;
-    }
 
-    public Symbol scan() {
-        try {
-            return lexer.scan();
-        } catch (Exception e) {
-            System.err.println("Lexical error: " + e.getMessage());
-            return null;
-        }
-    }
-}
+arg_list ::= expr:e arg_list_tail:alt          {: RESULT = e + alt; :}
+           ;
+
+
+arg_list_tail ::= COMMA expr:e arg_list_tail:alt    {: RESULT = ", " + e + alt; :}
+                |                                   {: RESULT = ""; :}
+                ;
+
+
+if_expr ::= IF LPAREN bool_expr:b RPAREN LBRACE stmt_list:s1 RBRACE ELSE LBRACE stmt_list:s2 RBRACE  
+            {: System.out.println("if (" + b + ") {\n" + s1 + "\n} else {\n" + s2 + "\n}"); 
+               RESULT = "if (" + b + ") {\n" + s1 + "\n} else {\n" + s2 + "\n}"; :}  
+         ;
+
+ 
+bool_expr ::= expr:e1 AND expr:e2        
+              {: RESULT = e1 + " && " + e2; :}
+           | expr:e1left PREFIX expr:e2right AND expr:e2left PREFIX expr:e1right  
+             {: RESULT = "(" + e1left + ".startsWith(" + e2right + ") && " + e2left + ".startsWith(" + e1right + "))"; :}
+           | REVERSE expr:e1left PREFIX REVERSE expr:e2right AND REVERSE expr:e2left PREFIX REVERSE expr:e1right  
+             {: RESULT = "(reverse(" + e1left + ").startsWith(reverse(" + e2right + ")) && reverse(" + e2left + ").startsWith(reverse(" + e1right + ")))"; :}
+           | REVERSE expr:e1 PREFIX REVERSE expr:e2  
+             {: RESULT = "reverse(" + e1 + ").startsWith(reverse(" + e2 + "))"; :}
+           | expr:e                       
+             {: RESULT = e; :}
+           ;

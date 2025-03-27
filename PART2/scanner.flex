@@ -70,7 +70,6 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 /* Keywords */   
 "if"       { return new Symbol(sym.IF); }
 "else"     { return new Symbol(sym.ELSE); }
-"prefix"   { return new Symbol(sym.PREFIX); }
 "and"      { return new Symbol(sym.AND); }
 
 /* operators */
@@ -102,8 +101,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 
       \\r                            { stringBuffer.append('\r'); }
       \\\"                           { stringBuffer.append('\"'); }
-      \\?                            { stringBuffer.append('?'); }
-      \\                             { stringBuffer.append('\\'); }
+      \\\\                           { stringBuffer.append('\\'); }
 }
 
 /* No token was found for the input so through an error.  Print out an
