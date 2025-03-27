@@ -95,7 +95,8 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 <STRING> {
       \"                             { yybegin(YYINITIAL);
                                        return symbol(sym.STRING_LITERAL, stringBuffer.toString()); }
-      {StringChar}+                    { stringBuffer.append( yytext() ); }
+      {StringChar}+                  { stringBuffer.append( yytext() ); }
+                                       
       \\t                            { stringBuffer.append('\t'); }
       \\n                            { stringBuffer.append('\n'); }
 
