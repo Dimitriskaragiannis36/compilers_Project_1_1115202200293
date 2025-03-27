@@ -29,7 +29,7 @@ terminal String ID;
 
 /*  Non terminals */
 non terminal String fun_stmt_list, function_def, stmt, if_expr, expr, bool_expr;
-non terminal String param_list, param_list_tail, arg_list, arg_list_tail;
+non terminal String list, list_tail;
 non terminal stmt_list;
 
 /**
@@ -51,18 +51,19 @@ fun_stmt_list ::= function_def:f SEMI fun_stmt_list:fl   {: System.out.println(f
                 ;
 
 
-function_def ::= ID:id LPAREN param_list:p RPAREN LBRACE stmt_list:s RBRACE 
+function_def ::= ID:id LPAREN list:p RPAREN LBRACE stmt_list:s RBRACE 
                {: RESULT = "function " + id + "(" + p + ") {\n" + s + "\n}"; :}
                ;
 
 
-param_list ::= ID:id param_list_tail:pt      {: RESULT = id + pt; :}
+list ::= expr:e list_tail:lt           {: RESULT = e + lt; :}
+      |                                {: RESULT = ""; :}  // Empty list allowed
+      ;
+
+list_tail ::= COMMA expr:e list_tail:lt   {: RESULT = ", " + e + lt; :}
+            |                             {: RESULT = ""; :}
             ;
 
-
-param_list_tail ::= COMMA ID:id param_list_tail:pt     {: RESULT = ", " + id + pt; :}
-                  |                                    {: RESULT = ""; :}
-                  ;
 
 stmt_list ::= stmt:s stmt_list:sl   {: System.out.println(s); RESULT = s + "\n" + sl; :}
            | stmt:s                 {: System.out.println(s); RESULT = s; :}
@@ -76,20 +77,10 @@ stmt ::= expr:e              {: RESULT = e + ";"; :}
 
 
 expr ::= STRING_LITERAL:s                      {: RESULT = s; :}
-      | ID:id LPAREN arg_list:al RPAREN        {: RESULT = id + "(" + al + ")"; :}
+      | ID:id LPAREN list:al RPAREN            {: RESULT = id + "(" + al + ")"; :}
       | expr:e1 CONCAT expr:e2                 {: RESULT = e1 + " + " + e2; :}
       | REVERSE expr:e                         {: RESULT = "reverse(" + e + ")"; :}
       ;
-
-
-arg_list ::= expr:e arg_list_tail:alt          {: RESULT = e + alt; :}
-           ;
-
-
-arg_list_tail ::= COMMA expr:e arg_list_tail:alt    {: RESULT = ", " + e + alt; :}
-                |                                   {: RESULT = ""; :}
-                ;
-
 
 if_expr ::= IF LPAREN bool_expr:b RPAREN LBRACE stmt_list:s1 RBRACE ELSE LBRACE stmt_list:s2 RBRACE  
             {: System.out.println("if (" + b + ") {\n" + s1 + "\n} else {\n" + s2 + "\n}"); 
@@ -99,12 +90,10 @@ if_expr ::= IF LPAREN bool_expr:b RPAREN LBRACE stmt_list:s1 RBRACE ELSE LBRACE 
  
 bool_expr ::= expr:e1 AND expr:e2        
               {: RESULT = e1 + " && " + e2; :}
-           | expr:e1left PREFIX expr:e2right AND expr:e2left PREFIX expr:e1right  
-             {: RESULT = "(" + e1left + ".startsWith(" + e2right + ") && " + e2left + ".startsWith(" + e1right + "))"; :}
-           | REVERSE expr:e1left PREFIX REVERSE expr:e2right AND REVERSE expr:e2left PREFIX REVERSE expr:e1right  
-             {: RESULT = "(reverse(" + e1left + ").startsWith(reverse(" + e2right + ")) && reverse(" + e2left + ").startsWith(reverse(" + e1right + ")))"; :}
-           | REVERSE expr:e1 PREFIX REVERSE expr:e2  
+           | expr:e1 PREFIX expr:e2
+             {: RESULT = e1 + ".startsWith(" + e2 + ")"; :}
+           | REVERSE expr:e1 PREFIX REVERSE expr:e2
              {: RESULT = "reverse(" + e1 + ").startsWith(reverse(" + e2 + "))"; :}
-           | expr:e                       
+           | expr:e                        
              {: RESULT = e; :}
            ;

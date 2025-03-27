@@ -7,7 +7,7 @@ import java_cup.runtime.*;
 /**
  *  Usercode Components
  */
-parser code {:
+p code {:
     // Connect this parser to a scanner!
     Scanner s;
     Parser(Scanner s){ this.s=s; }
@@ -57,7 +57,6 @@ function_def ::= ID:id LPAREN param_list:p RPAREN LBRACE stmt_list:s RBRACE
 
 
 param_list ::= ID:id param_list_tail:pt      {: RESULT = id + pt; :}
-            |                                {: RESULT = ""; :}  /* empty parameter list */
             ;
 
 
@@ -65,9 +64,10 @@ param_list_tail ::= COMMA ID:id param_list_tail:pt     {: RESULT = ", " + id + p
                   |                                    {: RESULT = ""; :}
                   ;
 
-stmt_list ::= stmt:s stmt_list:sl   {: RESULT = s + "\n" + sl; :}
-           | stmt:s                 {: RESULT = s; :}
+stmt_list ::= stmt:s stmt_list:sl   {: System.out.println(s); RESULT = s + "\n" + sl; :}
+           | stmt:s                 {: System.out.println(s); RESULT = s; :}
            ;
+
 
 
 stmt ::= expr:e              {: RESULT = e + ";"; :}
