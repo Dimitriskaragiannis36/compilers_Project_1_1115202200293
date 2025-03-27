@@ -28,7 +28,7 @@ terminal String     STRING_LITERAL;        // our scanner provides numbers as st
 terminal String ID;
 
 /*  Non terminals */
-non terminal String fun_stmt_list, function_def, stmt, if_expr, expr, bool_expr;
+non terminal String fun_stmt_list, function_def, stmt, if_expr, expr, atomic_expr, bool_expr;
 non terminal String list, list_tail;
 non terminal stmt_list;
 
@@ -76,11 +76,16 @@ stmt ::= expr:e              {: RESULT = e + ";"; :}
        ;
 
 
-expr ::= STRING_LITERAL:s                      {: RESULT = s; :}
-      | ID:id LPAREN list:al RPAREN            {: RESULT = id + "(" + al + ")"; :}
-      | expr:e1 CONCAT expr:e2                 {: RESULT = e1 + " + " + e2; :}
-      | REVERSE expr:e                         {: RESULT = "reverse(" + e + ")"; :}
+expr ::= expr:e1 CONCAT expr:e2       {: RESULT = e1 + " + " + e2; :}
+      | REVERSE expr:e                {: RESULT = "reverse(" + e + ")"; :}
+      | atomic_expr:e                 {: RESULT = e; :}
       ;
+
+atomic_expr ::= STRING_LITERAL:s                  {: RESULT = s; :}
+              | ID:id LPAREN list:al RPAREN       {: RESULT = id + "(" + al + ")"; :} // Function calls
+              | LPAREN expr:e RPAREN              {: RESULT = "(" + e + ")"; :} // Παρενθέσεις σε εκφράσεις
+              ;
+
 
 if_expr ::= IF LPAREN bool_expr:b RPAREN LBRACE stmt_list:s1 RBRACE ELSE LBRACE stmt_list:s2 RBRACE  
             {: System.out.println("if (" + b + ") {\n" + s1 + "\n} else {\n" + s2 + "\n}"); 
