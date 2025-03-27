@@ -84,7 +84,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 ";"        { return new Symbol(sym.SEMI); }
 
 /* Identifiers */
-{Identifier} { return symbol(sym.IDENTIFIER, yytext()); }
+{Identifier} { return symbol(sym.ID, yytext()); }
 
 /* String literals */
 \"         { yybegin(STRING); stringBuffer.setLength(0); }
@@ -96,12 +96,13 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 <STRING> {
       \"                             { yybegin(YYINITIAL);
                                        return symbol(sym.STRING_LITERAL, stringBuffer.toString()); }
-      [^\n\r\"\\]+                   { stringBuffer.append( yytext() ); }
+      {StringChar}+                    { stringBuffer.append( yytext() ); }
       \\t                            { stringBuffer.append('\t'); }
       \\n                            { stringBuffer.append('\n'); }
 
       \\r                            { stringBuffer.append('\r'); }
       \\\"                           { stringBuffer.append('\"'); }
+      \\?                            { stringBuffer.append('?'); }
       \\                             { stringBuffer.append('\\'); }
 }
 

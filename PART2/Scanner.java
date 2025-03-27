@@ -65,8 +65,10 @@ class Scanner implements java_cup.runtime.Scanner {
     "\11\0\1\1\1\2\1\0\1\1\1\3\22\0\1\1"+
     "\1\0\1\4\5\0\1\5\1\6\1\0\1\7\1\10"+
     "\3\0\12\11\1\0\1\12\5\0\32\13\1\0\1\14"+
-    "\2\0\1\13\1\0\15\13\1\15\3\13\1\16\1\13"+
-    "\1\17\6\13\1\20\1\0\1\21\1\22\u0181\0";
+    "\2\0\1\13\1\0\1\15\2\13\1\16\1\17\1\20"+
+    "\2\13\1\21\2\13\1\22\1\13\1\23\1\13\1\24"+
+    "\1\13\1\25\1\26\1\27\3\13\1\30\2\13\1\31"+
+    "\1\0\1\32\1\33\u0181\0";
 
   private static int [] zzUnpackcmap_blocks() {
     int [] result = new int[512];
@@ -94,11 +96,12 @@ class Scanner implements java_cup.runtime.Scanner {
 
   private static final String ZZ_ACTION_PACKED_0 =
     "\2\0\1\1\2\2\1\3\1\4\1\5\1\6\1\7"+
-    "\1\10\1\11\1\12\1\13\1\14\1\2\1\15\1\10"+
-    "\1\16\1\17\1\20\1\21\1\22";
+    "\1\10\5\11\1\12\1\13\1\14\1\15\1\2\1\16"+
+    "\1\17\2\11\1\20\1\11\1\21\1\22\1\23\1\24"+
+    "\1\25\2\11\1\26\2\11\1\27";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[23];
+    int [] result = new int[38];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -123,12 +126,14 @@ class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\23\0\46\0\46\0\71\0\46\0\46\0\46"+
-    "\0\46\0\46\0\114\0\46\0\46\0\46\0\137\0\137"+
-    "\0\46\0\162\0\205\0\46\0\46\0\46\0\46";
+    "\0\0\0\34\0\70\0\70\0\124\0\70\0\70\0\70"+
+    "\0\70\0\70\0\70\0\160\0\214\0\250\0\304\0\340"+
+    "\0\70\0\70\0\70\0\374\0\374\0\70\0\u0118\0\u0134"+
+    "\0\u0150\0\160\0\u016c\0\70\0\70\0\70\0\70\0\160"+
+    "\0\u0188\0\u01a4\0\160\0\u01c0\0\u01dc\0\160";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[23];
+    int [] result = new int[38];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -151,16 +156,27 @@ class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\3\2\4\1\5\1\3\1\6\1\7\1\10\1\11"+
-    "\1\3\1\12\1\13\1\3\3\13\1\14\1\15\1\16"+
-    "\1\17\1\20\1\4\1\5\1\21\6\17\1\22\1\23"+
-    "\3\22\3\17\25\0\1\4\31\0\1\13\1\0\1\13"+
-    "\1\0\3\13\3\0\2\17\3\0\7\17\1\0\10\17"+
-    "\3\0\4\17\1\22\1\17\1\22\1\0\3\22\3\17"+
-    "\4\0\1\24\10\0\1\25\1\26\1\27\3\0";
+    "\1\3\2\4\1\5\1\6\1\7\1\10\1\11\1\12"+
+    "\1\3\1\13\1\14\1\3\1\15\1\14\1\16\1\14"+
+    "\1\17\2\14\1\20\4\14\1\21\1\22\1\23\1\24"+
+    "\1\25\1\4\1\5\1\26\7\24\1\27\17\24\36\0"+
+    "\1\4\42\0\1\14\1\0\1\14\1\0\14\14\14\0"+
+    "\1\14\1\0\1\14\1\0\6\14\1\30\5\14\14\0"+
+    "\1\14\1\0\1\14\1\0\5\14\1\31\6\14\14\0"+
+    "\1\14\1\0\1\14\1\0\3\14\1\32\10\14\14\0"+
+    "\1\14\1\0\1\14\1\0\10\14\1\33\3\14\3\0"+
+    "\2\24\3\0\7\24\1\0\17\24\4\0\1\34\16\0"+
+    "\1\35\1\0\1\36\1\0\1\37\15\0\1\14\1\0"+
+    "\1\14\1\0\1\14\1\40\12\14\14\0\1\14\1\0"+
+    "\1\14\1\0\11\14\1\41\2\14\14\0\1\14\1\0"+
+    "\1\14\1\0\2\14\1\42\11\14\14\0\1\14\1\0"+
+    "\1\14\1\0\2\14\1\43\11\14\14\0\1\14\1\0"+
+    "\1\14\1\0\3\14\1\44\10\14\14\0\1\14\1\0"+
+    "\1\14\1\0\4\14\1\45\7\14\14\0\1\14\1\0"+
+    "\1\14\1\0\13\14\1\46\3\0";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[152];
+    int [] result = new int[504];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -203,11 +219,11 @@ class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\2\0\2\11\1\1\5\11\1\1\3\11\2\1\1\11"+
-    "\2\1\4\11";
+    "\2\0\2\11\1\1\6\11\5\1\3\11\2\1\1\11"+
+    "\5\1\4\11\7\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[23];
+    int [] result = new int[38];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -723,93 +739,118 @@ class Scanner implements java_cup.runtime.Scanner {
             { throw new Error("Illegal character <"+yytext()+">");
             }
           // fall through
-          case 19: break;
+          case 24: break;
           case 2:
             { /* just skip what was found, do nothing */
             }
           // fall through
-          case 20: break;
-          case 3:
-            { return new Symbol(sym.LPAREN);
-            }
-          // fall through
-          case 21: break;
-          case 4:
-            { return new Symbol(sym.RPAREN);
-            }
-          // fall through
-          case 22: break;
-          case 5:
-            { return new Symbol(sym.CONCAT);
-            }
-          // fall through
-          case 23: break;
-          case 6:
-            { return new Symbol(sym.COMMA);
-            }
-          // fall through
-          case 24: break;
-          case 7:
-            { return new Symbol(sym.SEMI);
-            }
-          // fall through
           case 25: break;
-          case 8:
-            { return new Symbol(sym.ID, yytext());
+          case 3:
+            { yybegin(STRING); stringBuffer.setLength(0);
             }
           // fall through
           case 26: break;
-          case 9:
-            { return new Symbol(sym.LBRACE);
+          case 4:
+            { return new Symbol(sym.LPAREN);
             }
           // fall through
           case 27: break;
-          case 10:
-            { return new Symbol(sym.RBRACE);
+          case 5:
+            { return new Symbol(sym.RPAREN);
             }
           // fall through
           case 28: break;
-          case 11:
-            { return new Symbol(sym.REVERSE);
+          case 6:
+            { return new Symbol(sym.CONCAT);
             }
           // fall through
           case 29: break;
-          case 12:
-            { stringBuffer.append( yytext() );
+          case 7:
+            { return new Symbol(sym.COMMA);
             }
           // fall through
           case 30: break;
+          case 8:
+            { return new Symbol(sym.SEMI);
+            }
+          // fall through
+          case 31: break;
+          case 9:
+            { return symbol(sym.ID, yytext());
+            }
+          // fall through
+          case 32: break;
+          case 10:
+            { return new Symbol(sym.LBRACE);
+            }
+          // fall through
+          case 33: break;
+          case 11:
+            { return new Symbol(sym.RBRACE);
+            }
+          // fall through
+          case 34: break;
+          case 12:
+            { return new Symbol(sym.REVERSE);
+            }
+          // fall through
+          case 35: break;
           case 13:
+            { stringBuffer.append( yytext() );
+            }
+          // fall through
+          case 36: break;
+          case 14:
             { yybegin(YYINITIAL);
                                        return symbol(sym.STRING_LITERAL, stringBuffer.toString());
             }
           // fall through
-          case 31: break;
-          case 14:
+          case 37: break;
+          case 15:
             { stringBuffer.append('\\');
             }
           // fall through
-          case 32: break;
-          case 15:
+          case 38: break;
+          case 16:
+            { return new Symbol(sym.IF);
+            }
+          // fall through
+          case 39: break;
+          case 17:
             { stringBuffer.append('\"');
             }
           // fall through
-          case 33: break;
-          case 16:
+          case 40: break;
+          case 18:
             { stringBuffer.append('\n');
             }
           // fall through
-          case 34: break;
-          case 17:
+          case 41: break;
+          case 19:
             { stringBuffer.append('\r');
             }
           // fall through
-          case 35: break;
-          case 18:
+          case 42: break;
+          case 20:
             { stringBuffer.append('\t');
             }
           // fall through
-          case 36: break;
+          case 43: break;
+          case 21:
+            { return new Symbol(sym.AND);
+            }
+          // fall through
+          case 44: break;
+          case 22:
+            { return new Symbol(sym.ELSE);
+            }
+          // fall through
+          case 45: break;
+          case 23:
+            { return new Symbol(sym.PREFIX);
+            }
+          // fall through
+          case 46: break;
           default:
             zzScanError(ZZ_NO_MATCH);
         }
