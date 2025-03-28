@@ -27,6 +27,7 @@ terminal String ID;
 
 /* Non-terminals */
 non terminal String program;
+non terminal String stmt_list;
 non terminal String stmt;
 non terminal String function_call;
 non terminal String param_list;
@@ -35,22 +36,31 @@ non terminal String expr;
 /**
  *  Precedence Declarations
  */
-
 precedence left CONCAT; 
 
+/* Grammar Rules */
+program ::= stmt_list:sl  {: RESULT = sl; :};
 
-program ::= stmt:s program:p  {: RESULT = s + "\n" + p; :}
-         | /* empty */        {: RESULT = ""; :};
+/* Λίστα από statements */
+stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
+           | stmt:s               {: RESULT = s; :};
 
+/* Ένα statement μπορεί να είναι μια κλήση συνάρτησης */
 stmt ::= function_call:fc  {: RESULT = fc; :};
 
+/* Ορισμός μιας συνάρτησης */
 function_call ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :};
+                  {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
+               | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
+                  {: RESULT = id + "() {\n  " + e + "\n}"; :}
+               | ID:id LPAREN param_list:params RPAREN  
+                  {: RESULT = id + "(" + params + ")"; :}
+               | ID:id LPAREN RPAREN  
+                  {: RESULT = id + "()"; :};
 
-/* Ορισμός παραμέτρων (comma-separated) */
+/* Λίστα παραμέτρων (comma-separated) */
 param_list ::= ID:id COMMA param_list:params  {: RESULT = id + ", " + params; :}
-             | ID:id                          {: RESULT = id; :}
-             | /* empty */                    {: RESULT = ""; :};
+             | ID:id                          {: RESULT = id; :};
 
 /* Υποστήριξη πράξεων μέσα στο σώμα της συνάρτησης */
 expr ::= expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
