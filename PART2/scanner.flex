@@ -73,14 +73,14 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 "and"      { return new Symbol(sym.AND); } */ 
 
 /* operators */
-/*"+"        { return new Symbol(sym.CONCAT, yytext()); }
-"~"        { return new Symbol(sym.REVERSE, yytext()); } */
+"+"        { return new Symbol(sym.CONCAT, yytext()); }
+/*"~"        { return new Symbol(sym.REVERSE, yytext()); } */
 "("        { return new Symbol(sym.LPAREN, yytext()); }
 ")"        { return new Symbol(sym.RPAREN, yytext()); }
 "{"        { return new Symbol(sym.LBRACE, yytext()); }
 "}"        { return new Symbol(sym.RBRACE, yytext()); }
-/*","        { return new Symbol(sym.COMMA, yytext()); }
-";"        { return new Symbol(sym.SEMI, yytext()); } */
+","        { return new Symbol(sym.COMMA, yytext()); }
+/*";"        { return new Symbol(sym.SEMI, yytext()); } */
 
 /* Identifiers */
 {Identifier} { return symbol(sym.ID, yytext()); }
