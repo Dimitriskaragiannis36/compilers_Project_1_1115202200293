@@ -26,11 +26,14 @@ terminal String STRING_LITERAL;
 terminal String ID;
 
 /* Non-terminals */
+non terminal String program;
 non terminal String stmt;
 non terminal String function_call;
 
-/* Grammar Rules */
-stmt ::= function_call:fc {: RESULT = fc; :};  // Δεν απαιτούμε ρητά το EOF
+program ::= stmt:s program:p  {: RESULT = s + "\n" + p; :}
+         | /* empty */        {: RESULT = ""; :};
+
+stmt ::= function_call:fc  {: RESULT = fc; :};
 
 function_call ::= ID:id LPAREN RPAREN LBRACE STRING_LITERAL:s RBRACE  
                   {: RESULT = id + "() {\n  " + s + "\n}"; :};
