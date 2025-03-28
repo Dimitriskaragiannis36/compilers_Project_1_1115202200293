@@ -59,10 +59,11 @@ function_call ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE
                   {: RESULT = id + "()"; :};
 
 /* Λίστα παραμέτρων (comma-separated) */
-param_list ::= ID:id COMMA param_list:params  {: RESULT = id + ", " + params; :}
-             | ID:id                          {: RESULT = id; :};
+param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
+             | expr:e                          {: RESULT = e; :};
 
 /* Υποστήριξη πράξεων μέσα στο σώμα της συνάρτησης */
 expr ::= expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
-      | STRING_LITERAL:s       {: RESULT = "\"" + s + "\""; :}
-      | ID:id                  {: RESULT = id; :};
+      | STRING_LITERAL:s       {: RESULT = s; :}
+      | ID:id                  {: RESULT = id; :}
+      | function_call:fc        {: RESULT = fc; :};
