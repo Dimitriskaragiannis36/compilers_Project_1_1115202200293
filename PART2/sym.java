@@ -6,37 +6,21 @@
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
-  public static final int AND = 7;
-  public static final int LBRACE = 10;
-  public static final int SEMI = 13;
-  public static final int STRING_LITERAL = 14;
-  public static final int EOF = 0;
-  public static final int PREFIX = 4;
-  public static final int CONCAT = 5;
-  public static final int IF = 2;
-  public static final int ID = 15;
-  public static final int ELSE = 3;
-  public static final int COMMA = 12;
+  public static final int ID = 7;
+  public static final int LBRACE = 4;
+  public static final int RPAREN = 3;
   public static final int error = 1;
-  public static final int RPAREN = 9;
-  public static final int RBRACE = 11;
-  public static final int LPAREN = 8;
-  public static final int REVERSE = 6;
+  public static final int RBRACE = 5;
+  public static final int STRING_LITERAL = 6;
+  public static final int LPAREN = 2;
+  public static final int EOF = 0;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
-  "IF",
-  "ELSE",
-  "PREFIX",
-  "CONCAT",
-  "REVERSE",
-  "AND",
   "LPAREN",
   "RPAREN",
   "LBRACE",
   "RBRACE",
-  "COMMA",
-  "SEMI",
   "STRING_LITERAL",
   "ID"
   };

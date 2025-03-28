@@ -66,8 +66,9 @@ list_tail ::= COMMA expr:e list_tail:lt   {: RESULT = ", " + e + lt; :}
 
 
 stmt_list ::= stmt:s stmt_list:sl   {: System.out.println(s); RESULT = s + "\n" + sl; :}
-           | stmt:s                 {: System.out.println(s); RESULT = s; :}
+           |                         {: RESULT = ""; :}  // Επιτρέπουμε άδειο stmt_list
            ;
+
 
 
 
