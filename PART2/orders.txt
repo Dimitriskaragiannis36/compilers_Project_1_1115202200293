@@ -1,7 +1,14 @@
 //ΓΙΑ LEXER
-java -jar C:\Users\dimit\Downloads\jflex-1.9.1\lib\jflex-full-1.9.1.jar lexer.flex
+java -jar C:\Users\dimit\Downloads\jflex-1.9.1\lib\jflex-full-1.9.1.jar scanner.flex
 
 //ΓΙΑ PARSER
 java -jar C:\Users\dimit\Downloads\java-cup-11b.jar -parser Parser -symbols sym parser.cup
 
+//ΓΙΑ .JAVA
 javac -cp "C:\Users\dimit\Downloads\java-cup-11b-runtime.jar;." *.java
+
+//ΓΙΑ Main
+java -cp "C:\Users\dimit\Downloads\java-cup-11b-runtime.jar;." OK2
+
+java -cp "C:\Users\dimit\Downloads\java-cup-11b-runtime.jar;." Main
+

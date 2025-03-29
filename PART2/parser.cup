@@ -21,7 +21,7 @@ scan with {: return s.next_token(); :};
  */
 
 /* Terminals */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX;
 terminal String STRING_LITERAL;
 terminal String ID;
 
@@ -32,10 +32,15 @@ non terminal String stmt;
 non terminal String function_call;
 non terminal String param_list;
 non terminal String expr;
+non terminal String expr_tail;
+non terminal String term;
+non terminal String if_expr;
+non terminal String condition;
 
 /**
  *  Precedence Declarations
  */
+precedence left IF;
 precedence left CONCAT; 
 
 /* Grammar Rules */
@@ -63,7 +68,21 @@ param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
              | expr:e                          {: RESULT = e; :};
 
 /* Υποστήριξη πράξεων μέσα στο σώμα της συνάρτησης */
-expr ::= expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
-      | STRING_LITERAL:s       {: RESULT = s; :}
-      | ID:id                  {: RESULT = id; :}
-      | function_call:fc        {: RESULT = fc; :};
+expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
+      | if_expr:ie            {: RESULT = ie; :};
+
+if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2  
+              {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
+
+condition ::= expr:e1 SUFFIX expr:e2  
+              {: RESULT = "reverse " + e1 + " prefix reverse " + e2; :}
+           | expr;
+
+
+expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
+           |                              {: RESULT = ""; :};
+
+term ::= STRING_LITERAL:s  {: RESULT = s; :}
+       | ID:id            {: RESULT = id; :}
+       | function_call:fc  {: RESULT = fc; :};
+

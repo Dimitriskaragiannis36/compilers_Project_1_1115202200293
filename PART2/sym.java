@@ -7,13 +7,16 @@
 public class sym {
   /* terminals */
   public static final int LBRACE = 4;
-  public static final int STRING_LITERAL = 8;
+  public static final int STRING_LITERAL = 11;
   public static final int EOF = 0;
   public static final int CONCAT = 7;
-  public static final int ID = 9;
+  public static final int IF = 8;
+  public static final int ID = 12;
+  public static final int ELSE = 9;
   public static final int error = 1;
   public static final int COMMA = 6;
   public static final int RPAREN = 3;
+  public static final int SUFFIX = 10;
   public static final int LPAREN = 2;
   public static final int RBRACE = 5;
   public static final String[] terminalNames = new String[] {
@@ -25,6 +28,9 @@ public class sym {
   "RBRACE",
   "COMMA",
   "CONCAT",
+  "IF",
+  "ELSE",
+  "SUFFIX",
   "STRING_LITERAL",
   "ID"
   };

@@ -68,19 +68,19 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 
 <YYINITIAL> {
 /* Keywords */   
-"if"       { return new Symbol(sym.IF); }
+/*"if"       { return new Symbol(sym.IF); }
 "else"     { return new Symbol(sym.ELSE); }
-"and"      { return new Symbol(sym.AND); }
+"and"      { return new Symbol(sym.AND); } */ 
 
 /* operators */
-"+"        { return new Symbol(sym.CONCAT); }
-"~"        { return new Symbol(sym.REVERSE); }
-"("        { return new Symbol(sym.LPAREN); }
-")"        { return new Symbol(sym.RPAREN); }
-"{"        { return new Symbol(sym.LBRACE); }
-"}"        { return new Symbol(sym.RBRACE); }
-","        { return new Symbol(sym.COMMA); }
-";"        { return new Symbol(sym.SEMI); }
+"+"        { return new Symbol(sym.CONCAT, yytext()); }
+/*"~"        { return new Symbol(sym.REVERSE, yytext()); } */
+"("        { return new Symbol(sym.LPAREN, yytext()); }
+")"        { return new Symbol(sym.RPAREN, yytext()); }
+"{"        { return new Symbol(sym.LBRACE, yytext()); }
+"}"        { return new Symbol(sym.RBRACE, yytext()); }
+","        { return new Symbol(sym.COMMA, yytext()); }
+/*";"        { return new Symbol(sym.SEMI, yytext()); } */
 
 /* Identifiers */
 {Identifier} { return symbol(sym.ID, yytext()); }
@@ -93,8 +93,10 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 {WhiteSpace} { /* just skip what was found, do nothing */ }
 
 <STRING> {
-      \"                             { yybegin(YYINITIAL);
-                                       return symbol(sym.STRING_LITERAL, stringBuffer.toString()); }
+    \"        { 
+                  yybegin(YYINITIAL);  // Return to the initial state
+                  return symbol(sym.STRING_LITERAL, "\"" + stringBuffer.toString() + "\"");  // Include quotes
+               }
       {StringChar}+                    { stringBuffer.append( yytext() ); }
       \\t                            { stringBuffer.append('\t'); }
       \\n                            { stringBuffer.append('\n'); }
