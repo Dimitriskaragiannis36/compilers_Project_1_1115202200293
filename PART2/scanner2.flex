@@ -72,7 +72,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 "else"       { return new Symbol(sym.ELSE, yytext()); }
 "reverse"     { return new Symbol(sym.REVERSE, yytext()); }
 "prefix"     { return new Symbol(sym.PREFIX, yytext()); }
-
+"&&"     { return new Symbol(sym.EQUAL, yytext()); }
 
 /* operators */
 "+"        { return new Symbol(sym.CONCAT, yytext()); }

@@ -8,7 +8,7 @@ class Main {
         System.out.println("Please type your string expression OK2:");
         
         // Δημιουργούμε το Scanner και τον Parser
-        Scanner scanner = new Scanner(new InputStreamReader(System.in));
+        Scanner2 scanner = new Scanner2(new InputStreamReader(System.in));
         
         java_cup.runtime.Symbol token;
         
@@ -17,14 +17,14 @@ class Main {
             System.out.println("Token: " + sym.terminalNames[token.sym] + " | Value: " + token.value);
         }
         
-        // Εκτελούμε τον parser για να αναλύσει την είσοδο
+        /*// Εκτελούμε τον parser για να αναλύσει την είσοδο
         Parser parser = new Parser(scanner);
         try {
             parser.parse();
         } catch (Exception e) {
             System.err.println("Parsing error: " + e.getMessage());
             e.printStackTrace();
-        }
+        }*/
         
     }
 }

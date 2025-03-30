@@ -7,12 +7,10 @@
 public class sym2 {
   /* terminals */
   public static final int LBRACE = 4;
-  public static final int STRING_LITERAL = 10;
+  public static final int STRING_LITERAL = 8;
   public static final int EOF = 0;
   public static final int CONCAT = 7;
-  public static final int IF = 8;
-  public static final int ID = 11;
-  public static final int ELSE = 9;
+  public static final int ID = 9;
   public static final int error = 1;
   public static final int COMMA = 6;
   public static final int RPAREN = 3;
@@ -27,8 +25,6 @@ public class sym2 {
   "RBRACE",
   "COMMA",
   "CONCAT",
-  "IF",
-  "ELSE",
   "STRING_LITERAL",
   "ID"
   };

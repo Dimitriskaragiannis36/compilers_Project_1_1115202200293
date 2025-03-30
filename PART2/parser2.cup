@@ -1,61 +1,49 @@
-/* Simple +/-/* expression language; parser evaluates constant expressions on the fly */
-/**
- *  Package and Import Specifications
- */
 import java_cup.runtime.*;
 
-/**
- *  Usercode Components
- */
 parser code {: 
-    Scanner2 sir;
-    Parser2(Scanner2 sir) { this.sir = sir; }
+    Scanner2 s;
+    Parser2(Scanner2 s) { this.s = s; }
 :};
 
-scan with {: return sir.next_token(); :};
+scan with {: return s.next_token(); :};
 
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, PREFIX, REVERSE;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT;
 terminal String STRING_LITERAL;
 terminal String ID;
 
 non terminal String program;
 non terminal String stmt_list;
 non terminal String stmt;
-non terminal String function_def;
 non terminal String function_call;
+non terminal String function_def;
 non terminal String param_list;
 non terminal String expr;
 non terminal String expr_tail;
 non terminal String term;
-non terminal String if_expr;
 
-precedence left IF;
-precedence left CONCAT;
-
-program ::= stmt_list:sl  {: RESULT = "public class Translated {\n" + sl + "\n}"; :};
+program ::= stmt_list:sl  
+    {: RESULT = "public class Translated {\n  public static void main(String[] args) {\n" + sl + "  }\n}"; :};
 
 stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
            | stmt:s               {: RESULT = s; :};
 
 stmt ::= function_def:fd  {: RESULT = fd; :}
-      | function_call:fc  {: RESULT = "  public static void main(String[] args) {\n    " + fc + ";\n  }"; :};
+      | function_call:fc  {: RESULT = "    System.out.println(" + fc + ");"; :};
 
 function_def ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = "  public static String " + id + "(" + params + ") {\n    return " + e + ";\n  }"; :}
-               | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = "  public static String " + id + "() {\n    return " + e + ";\n  }"; :};
+    {: RESULT = "  public static String " + id + "(" + params + ") {\n    return " + e + ";\n  }"; :}
+    | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
+    {: RESULT = "  public static String " + id + "() {\n    return " + e + ";\n  }"; :};
 
-function_call ::= ID:id LPAREN param_list:params RPAREN  {: RESULT = id + "(" + params + ")"; :}
-               | ID:id LPAREN RPAREN  {: RESULT = id + "()"; :};
+param_list ::= ID:id COMMA param_list:params  {: RESULT = "String " + id + ", " + params; :}
+             | ID:id                          {: RESULT = "String " + id; :};
 
-param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
-             | expr:e                          {: RESULT = e; :};
+function_call ::= ID:id LPAREN param_list:params RPAREN  
+    {: RESULT = id + "(" + params + ")"; :}
+    | ID:id LPAREN RPAREN  
+    {: RESULT = id + "()"; :};
 
-expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
-      | if_expr:ie            {: RESULT = ie; :};
-
-if_expr ::= IF LPAREN expr:e RPAREN expr:e1 ELSE expr:e2  
-              {: RESULT = "(" + e + " ? " + e1 + " : " + e2 + ")"; :};
+expr ::= term:t expr_tail:et  {: RESULT = t + et; :};
 
 expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
            |                              {: RESULT = ""; :};
