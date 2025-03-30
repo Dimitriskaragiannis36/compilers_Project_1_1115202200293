@@ -1,13 +1,37 @@
+
 import java_cup.runtime.*;
 
-parser code {: 
-    Scanner2 s;
-    Parser2(Scanner2 s) { this.s = s; }
+parser code {:
+    // Connect this parser to a scanner!
+    Scanner2 s2;
+    String functionDefinitions = "";  // Θα κρατάμε εδώ όλες τις συναρτήσεις
+    Parser2(Scanner2 s2) { this.s2 = s2; }
 :};
 
-scan with {: return s.next_token(); :};
+/* Define how to connect to the scanner */
+scan with {:
+    Symbol sym = s2.next_token();  
+    System.out.println("Token_parser2: " + sym2.terminalNames[sym.sym] + " | Value: " + sym.value);
+    
+    // Debugging: εκτυπώνει το τελευταίο token που αποδέχτηκε ο parser
+    if (sym.sym != 0) {
+        System.out.println("Last accepted token: " + sym2.terminalNames[sym.sym] + " | Value: " + sym.value);
+    } else {
+        System.out.println("Parser reached EOF.");
+    }
 
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT;
+    return sym;
+:};
+
+
+
+
+/**
+ *  Symbol Lists
+ */
+
+/* Terminals */
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, PREFIX, REVERSE, EQUAL;
 terminal String STRING_LITERAL;
 terminal String ID;
 
@@ -15,39 +39,77 @@ non terminal String program;
 non terminal String stmt_list;
 non terminal String stmt;
 non terminal String function_call;
-non terminal String function_def;
 non terminal String param_list;
 non terminal String expr;
 non terminal String expr_tail;
 non terminal String term;
+non terminal String if_expr;
+non terminal String condition;
+non terminal String condition_tail;
 
-program ::= stmt_list:sl  
-    {: RESULT = "public class Translated {\n  public static void main(String[] args) {\n" + sl + "  }\n}"; :};
+precedence left IF;
+precedence left CONCAT; 
+precedence left REVERSE;
+
+program ::= stmt_list:sl  {: 
+    RESULT = "public class Translated {\n" +
+             functionDefinitions +  // Εδώ θα μπαίνουν όλες οι συναρτήσεις
+             "  public static void main(String[] args) {\n" +
+             sl +  // Εδώ θα μπαίνουν οι κλήσεις συναρτήσεων και άλλες εκφράσεις
+             "  }\n" +
+             "}\n";
+:};
 
 stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
            | stmt:s               {: RESULT = s; :};
 
-stmt ::= function_def:fd  {: RESULT = fd; :}
-      | function_call:fc  {: RESULT = "    System.out.println(" + fc + ");"; :};
-
-function_def ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-    {: RESULT = "  public static String " + id + "(" + params + ") {\n    return " + e + ";\n  }"; :}
-    | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-    {: RESULT = "  public static String " + id + "() {\n    return " + e + ";\n  }"; :};
-
-param_list ::= ID:id COMMA param_list:params  {: RESULT = "String " + id + ", " + params; :}
-             | ID:id                          {: RESULT = "String " + id; :};
+stmt ::= function_call:fc  {: RESULT = "    System.out.println(" + fc + ");"; :};
 
 function_call ::= ID:id LPAREN param_list:params RPAREN  
-    {: RESULT = id + "(" + params + ")"; :}
-    | ID:id LPAREN RPAREN  
-    {: RESULT = id + "()"; :};
+                  {: RESULT = id + "(" + params + ")"; :}
+               | ID:id LPAREN RPAREN  
+                  {: RESULT = id + "()"; :};
 
-expr ::= term:t expr_tail:et  {: RESULT = t + et; :};
+param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
+             | expr:e                          {: RESULT = e; :};
+
+/* Μετατροπή των ορισμών συναρτήσεων σε Java static methods */
+stmt ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
+          {: 
+              functionDefinitions += "  public static String " + id + "(" + params + ") {\n" +
+                                     "    return " + e + ";\n" +
+                                     "  }\n"; 
+              RESULT = "";  // Ο ορισμός συνάρτησης δεν πρέπει να μπει στο main
+          :}
+       | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
+          {: 
+              functionDefinitions += "  public static String " + id + "() {\n" +
+                                     "    return " + e + ";\n" +
+                                     "  }\n"; 
+              RESULT = "";  // Ο ορισμός συνάρτησης δεν πρέπει να μπει στο main
+          :};
+
+expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
+      | if_expr:ie            {: RESULT = ie; :};
+
+if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2  
+              {: RESULT = "(" + c + " ? " + e1 + " : " + e2 + ")"; :};
+
+condition ::= expr:e condition_tail:ct  
+    {: RESULT = e + ct; :};
+
+condition_tail ::= PREFIX expr:e2  
+                      {: RESULT = ".startsWith(" + e2 + ")"; :}
+                | EQUAL expr:e2   
+                      {: RESULT = ".equals(" + e2 + ")"; :}
+                | REVERSE expr:e2  
+                      {: RESULT = "new StringBuilder(" + e2 + ").reverse().toString()"; :}
+                | ;  
 
 expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
            |                              {: RESULT = ""; :};
 
-term ::= STRING_LITERAL:s  {: RESULT = s; :}
+term ::= REVERSE term:t  {: RESULT = "new StringBuilder(" + t + ").reverse().toString()"; :}
+       | STRING_LITERAL:s  {: RESULT = s; :}
        | ID:id            {: RESULT = id; :}
        | function_call:fc  {: RESULT = fc; :};

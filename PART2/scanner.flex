@@ -73,6 +73,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 "suffix"     { return new Symbol(sym.SUFFIX, yytext()); }
 "prefix"     { return new Symbol(sym.PREFIX, yytext()); }
 "="          { return new Symbol(sym.EQUAL, yytext()); }
+"EOF"          { return new Symbol(sym.EOF, yytext()); }
 
 /* operators */
 "+"        { return new Symbol(sym.CONCAT, yytext()); }

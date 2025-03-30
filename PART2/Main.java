@@ -16,6 +16,11 @@ class Main {
         while ((token = scanner.next_token()).sym != sym.EOF) {
             System.out.println("Token: " + sym.terminalNames[token.sym] + " | Value: " + token.value);
         }
+
+        // Όταν φτάσουμε στο EOF, το token θα έχει τύπο sym.EOF
+        System.out.println("EOF reached. Token: " + sym.terminalNames[token.sym] + " | Value: " + token.value);
+    
+    
         
         /*// Εκτελούμε τον parser για να αναλύσει την είσοδο
         Parser parser = new Parser(scanner);
