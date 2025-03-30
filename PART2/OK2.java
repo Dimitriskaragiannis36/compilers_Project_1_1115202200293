@@ -21,5 +21,22 @@ class OK2 {
         } finally {
             writer.close();
         }
+
+                // 2ος Parser: Μετατροπή IR σε Java
+                BufferedReader readerIR = new BufferedReader(new FileReader("Translated.ir"));
+                PrintWriter writerJava = new PrintWriter(new FileWriter("Translated.java"));
+        
+                Parser2 p2 = new Parser2(new Scanner2(readerIR));  // ScannerIR = Lexer για την IR
+        
+                try {
+                    Symbol result2 = p2.parse();
+                    writerJava.println(result2.value);  // Αποθηκεύει τον Java κώδικα στο αρχείο
+                    System.out.println("Parsing to Java completed. Output saved to Translated.java");
+                } catch (Exception e) {
+                    System.err.println("Parsing to Java error: " + e.getMessage());
+                } finally {
+                    writerJava.close();
+                    readerIR.close();
+                }
     }
 }

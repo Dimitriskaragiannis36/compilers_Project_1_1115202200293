@@ -7,85 +7,55 @@ import java_cup.runtime.*;
 /**
  *  Usercode Components
  */
-parser code {:
-    // Connect this parser to a scanner!
-    ScannerIR s;
-    Parser2(ScannerIR s) { this.s = s; }
+parser code {: 
+    Scanner2 sir;
+    Parser2(Scanner2 sir) { this.sir = sir; }
 :};
 
-/* Define how to connect to the scanner */
-scan with {: return s.next_token(); :};
+scan with {: return sir.next_token(); :};
 
-/**
- *  Symbol Lists
- */
-
-/* Terminals */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, PREFIX, REVERSE;
 terminal String STRING_LITERAL;
 terminal String ID;
 
-/* Non-terminals */
 non terminal String program;
 non terminal String stmt_list;
 non terminal String stmt;
+non terminal String function_def;
 non terminal String function_call;
 non terminal String param_list;
 non terminal String expr;
 non terminal String expr_tail;
 non terminal String term;
 non terminal String if_expr;
-non terminal String condition;
-non terminal String condition_tail;
 
-/**
- *  Precedence Declarations
- */
 precedence left IF;
-precedence left CONCAT; 
+precedence left CONCAT;
 
-/* Grammar Rules */
-program ::= stmt_list:sl  
-             {: RESULT = "public class Translated {\n" +
-                        "  public static void main(String[] args) {\n" +
-                        "    " + sl + "\n  }\n}"; :};
+program ::= stmt_list:sl  {: RESULT = "public class Translated {\n" + sl + "\n}"; :};
 
-/* Λίστα από statements */
 stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
            | stmt:s               {: RESULT = s; :};
 
-/* Ένα statement μπορεί να είναι μια κλήση συνάρτησης */
-stmt ::= function_call:fc  {: RESULT = fc; :};
+stmt ::= function_def:fd  {: RESULT = fd; :}
+      | function_call:fc  {: RESULT = "  public static void main(String[] args) {\n    " + fc + ";\n  }"; :};
 
-/* Ορισμός μιας συνάρτησης */
-function_call ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
+function_def ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
+                  {: RESULT = "  public static String " + id + "(" + params + ") {\n    return " + e + ";\n  }"; :}
                | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = id + "() {\n  " + e + "\n}"; :}
-               | ID:id LPAREN param_list:params RPAREN  
-                  {: RESULT = id + "(" + params + ")"; :}
-               | ID:id LPAREN RPAREN  
-                  {: RESULT = id + "()"; :};
+                  {: RESULT = "  public static String " + id + "() {\n    return " + e + ";\n  }"; :};
 
-/* Λίστα παραμέτρων (comma-separated) */
+function_call ::= ID:id LPAREN param_list:params RPAREN  {: RESULT = id + "(" + params + ")"; :}
+               | ID:id LPAREN RPAREN  {: RESULT = id + "()"; :};
+
 param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
              | expr:e                          {: RESULT = e; :};
 
-/* Υποστήριξη πράξεων μέσα στο σώμα της συνάρτησης */
 expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
       | if_expr:ie            {: RESULT = ie; :};
 
-if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2  
-              {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
-
-condition ::= expr:e condition_tail:ct  
-              {: RESULT = ct.isEmpty() ? e : (ct.startsWith(" prefix") ? e + ct : "reverse " + e + " prefix reverse " + ct); :};
-
-condition_tail ::= PREFIX expr:e2  
-                      {: RESULT = " prefix " + e2; :}
-                | SUFFIX expr:e2  
-                      {: RESULT = e2; :} // Επιστρέφουμε το e2 και το χρησιμοποιούμε σωστά στο condition
-                | ;
+if_expr ::= IF LPAREN expr:e RPAREN expr:e1 ELSE expr:e2  
+              {: RESULT = "(" + e + " ? " + e1 + " : " + e2 + ")"; :};
 
 expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
            |                              {: RESULT = ""; :};
@@ -93,4 +63,3 @@ expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
 term ::= STRING_LITERAL:s  {: RESULT = s; :}
        | ID:id            {: RESULT = id; :}
        | function_call:fc  {: RESULT = fc; :};
-
