@@ -42,7 +42,7 @@ findLangType(langName) {
       else
         "Unknown"
       else
-        if ("script" suffix langName)
+        if ("script" = langName)
           "Probably Dynamic"
         else
           "Unknown"

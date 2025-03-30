@@ -22,7 +22,7 @@ cond_repeat(c, x) {
 cond_repeat("yes", name())
 cond_repeat("no?", "Jane")
 findLangType(langName) {
-  if ("Java" prefix langName) if (langName prefix "Java") "Static" else if (reverse "script" prefix reverse langName) "Dynamic" else "Unknown" else if (reverse "script" prefix reverse langName) "Probably Dynamic" else "Unknown"
+  if ("Java" prefix langName) if (langName prefix "Java") "Static" else if (reverse "script" prefix reverse langName) "Dynamic" else "Unknown" else if ("script" prefix langName && langName prefix "script") "Probably Dynamic" else "Unknown"
 }
 findLangType("Java")
 findLangType("Javascript")

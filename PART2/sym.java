@@ -7,12 +7,13 @@
 public class sym {
   /* terminals */
   public static final int LBRACE = 4;
-  public static final int STRING_LITERAL = 13;
+  public static final int STRING_LITERAL = 14;
+  public static final int EQUAL = 13;
   public static final int PREFIX = 11;
   public static final int EOF = 0;
   public static final int CONCAT = 7;
   public static final int IF = 8;
-  public static final int ID = 14;
+  public static final int ID = 15;
   public static final int ELSE = 9;
   public static final int error = 1;
   public static final int COMMA = 6;
@@ -35,6 +36,7 @@ public class sym {
   "SUFFIX",
   "PREFIX",
   "REVERSE",
+  "EQUAL",
   "STRING_LITERAL",
   "ID"
   };

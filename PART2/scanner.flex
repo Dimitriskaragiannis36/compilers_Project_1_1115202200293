@@ -68,11 +68,11 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 
 <YYINITIAL> {
 /* Keywords */   
-"if"       { return new Symbol(sym.IF, yytext()); }
-"else"     { return new Symbol(sym.ELSE, yytext()); }
+"if"         { return new Symbol(sym.IF, yytext()); }
+"else"       { return new Symbol(sym.ELSE, yytext()); }
 "suffix"     { return new Symbol(sym.SUFFIX, yytext()); }
 "prefix"     { return new Symbol(sym.PREFIX, yytext()); }
-/*"and"      { return new Symbol(sym.AND); } */ 
+"="          { return new Symbol(sym.EQUAL, yytext()); }
 
 /* operators */
 "+"        { return new Symbol(sym.CONCAT, yytext()); }

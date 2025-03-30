@@ -21,7 +21,7 @@ scan with {: return s.next_token(); :};
  */
 
 /* Terminals */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL;
 terminal String STRING_LITERAL;
 terminal String ID;
 
@@ -77,12 +77,17 @@ if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2
               {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
 
 condition ::= expr:e condition_tail:ct  
-              {: RESULT = ct.isEmpty() ? e : (ct.startsWith(" prefix") ? e + ct : "reverse " + e + " prefix " + ct); :};
+    {: RESULT = ct.isEmpty() ? e :  
+         (ct.startsWith(" prefix") ? e + ct :  
+         (ct.startsWith(" = ") ? e + " prefix " + ct.substring(3) + " && " + ct.substring(3) + " prefix " + e  
+                               : "reverse " + e + " prefix reverse " + ct.substring(8))); :};
 
 condition_tail ::= PREFIX expr:e2  
                       {: RESULT = " prefix " + e2; :}
                 | SUFFIX expr:e2  
                       {: RESULT = "reverse " + e2; :} // Επιστρέφουμε το e2 και το χρησιμοποιούμε σωστά στο condition
+                | EQUAL expr:e2   
+                      {: RESULT = " = " + e2; :}
                 | ;
 
 expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
