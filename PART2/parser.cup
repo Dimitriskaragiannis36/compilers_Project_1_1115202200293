@@ -21,7 +21,7 @@ scan with {: return s.next_token(); :};
  */
 
 /* Terminals */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE;
 terminal String STRING_LITERAL;
 terminal String ID;
 
@@ -43,6 +43,7 @@ non terminal String condition_tail;
  */
 precedence left IF;
 precedence left CONCAT; 
+precedence left REVERSE;
 
 /* Grammar Rules */
 program ::= stmt_list:sl  {: RESULT = sl; :};
@@ -76,18 +77,19 @@ if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2
               {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
 
 condition ::= expr:e condition_tail:ct  
-              {: RESULT = ct.isEmpty() ? e : (ct.startsWith(" prefix") ? e + ct : "reverse " + e + " prefix reverse " + ct); :};
+              {: RESULT = ct.isEmpty() ? e : (ct.startsWith(" prefix") ? e + ct : "reverse " + e + " prefix " + ct); :};
 
 condition_tail ::= PREFIX expr:e2  
                       {: RESULT = " prefix " + e2; :}
                 | SUFFIX expr:e2  
-                      {: RESULT = e2; :} // Επιστρέφουμε το e2 και το χρησιμοποιούμε σωστά στο condition
+                      {: RESULT = "reverse " + e2; :} // Επιστρέφουμε το e2 και το χρησιμοποιούμε σωστά στο condition
                 | ;
 
 expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
            |                              {: RESULT = ""; :};
 
-term ::= STRING_LITERAL:s  {: RESULT = s; :}
+term ::= REVERSE term:t  {: RESULT = "reverse " + t; :}
+       | STRING_LITERAL:s  {: RESULT = s; :}
        | ID:id            {: RESULT = id; :}
        | function_call:fc  {: RESULT = fc; :};
 

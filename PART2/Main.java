@@ -1,42 +1,30 @@
-import java_cup.runtime.*;
-import java.io.*;
+import java.io.InputStreamReader;
 
-class OK2 {
-    public static void main(String[] argv) throws Exception {
-        System.out.println("Please type your string expression:");
+class Main {
+    Main() {
+    }
 
-        // Δημιουργία αρχείου εξόδου για την IR
-        PrintWriter writerIR = new PrintWriter(new FileWriter("Translated.ir"));
-
-        // 1ος Parser: Μετατροπή εισόδου σε IR
-        Parser p1 = new Parser(new Scanner(new InputStreamReader(System.in)));
-
-        try {
-            Symbol result1 = p1.parse();  
-            writerIR.println(result1.value);  // Αποθηκεύει την IR στο αρχείο
-            System.out.println("Parsing to IR completed. Output saved to Translated.ir");
-        } catch (Exception e) {
-            System.err.println("Parsing to IR error: " + e.getMessage());
-            return;
-        } finally {
-            writerIR.close();
+    public static void main(String[] var0) throws Exception {
+        System.out.println("Please type your string expression OK2:");
+        
+        // Δημιουργούμε το Scanner και τον Parser
+        Scanner scanner = new Scanner(new InputStreamReader(System.in));
+        
+        java_cup.runtime.Symbol token;
+        
+        // Διαβάζουμε και εκτυπώνουμε τα tokens
+        while ((token = scanner.next_token()).sym != sym.EOF) {
+            System.out.println("Token: " + sym.terminalNames[token.sym] + " | Value: " + token.value);
         }
-
-        // 2ος Parser: Μετατροπή IR σε Java
-        BufferedReader readerIR = new BufferedReader(new FileReader("Translated.ir"));
-        PrintWriter writerJava = new PrintWriter(new FileWriter("Translated.java"));
-
-        Parser2 p2 = new Parser2(new ScannerIR(readerIR));  // ScannerIR = Lexer για την IR
-
+        
+        // Εκτελούμε τον parser για να αναλύσει την είσοδο
+        Parser parser = new Parser(scanner);
         try {
-            Symbol result2 = p2.parse();
-            writerJava.println(result2.value);  // Αποθηκεύει τον Java κώδικα στο αρχείο
-            System.out.println("Parsing to Java completed. Output saved to Translated.java");
+            parser.parse();
         } catch (Exception e) {
-            System.err.println("Parsing to Java error: " + e.getMessage());
-        } finally {
-            writerJava.close();
-            readerIR.close();
+            System.err.println("Parsing error: " + e.getMessage());
+            e.printStackTrace();
         }
+        
     }
 }
