@@ -12,7 +12,7 @@ import java_cup.runtime.XMLElement;
 public class Parser2 extends java_cup.runtime.lr_parser {
 
  public final Class getSymbolContainer() {
-    return sym2.class;
+    return sym.class;
 }
 
   /** Default constructor. */
@@ -44,50 +44,50 @@ public class Parser2 extends java_cup.runtime.lr_parser {
   /** Parse-action table. */
   protected static final short[][] _action_table = 
     unpackFromStrings(new String[] {
-    "\000\063\000\004\020\004\001\002\000\004\004\013\001" +
-    "\002\000\004\002\012\001\002\000\006\002\ufffe\020\004" +
-    "\001\002\000\004\002\001\001\002\000\006\002\ufffd\020" +
+    "\000\063\000\004\022\004\001\002\000\004\004\013\001" +
+    "\002\000\004\002\012\001\002\000\006\002\ufffe\022\004" +
+    "\001\002\000\004\002\001\001\002\000\006\002\ufffd\022" +
     "\ufffd\001\002\000\004\002\uffff\001\002\000\004\002\000" +
-    "\001\002\000\014\005\022\012\017\015\024\017\015\020" +
+    "\001\002\000\014\005\022\012\017\016\024\021\015\022" +
     "\020\001\002\000\022\005\uffed\007\uffed\010\uffed\011\063" +
-    "\013\uffed\014\uffed\015\uffed\016\uffed\001\002\000\022\005" +
-    "\uffeb\007\uffeb\010\uffeb\011\uffeb\013\uffeb\014\uffeb\015\uffeb" +
-    "\016\uffeb\001\002\000\022\005\uffe9\007\uffe9\010\uffe9\011" +
-    "\uffe9\013\uffe9\014\uffe9\015\uffe9\016\uffe9\001\002\000\004" +
+    "\013\uffed\015\uffed\016\uffed\020\uffed\001\002\000\022\005" +
+    "\uffeb\007\uffeb\010\uffeb\011\uffeb\013\uffeb\015\uffeb\016\uffeb" +
+    "\020\uffeb\001\002\000\022\005\uffe9\007\uffe9\010\uffe9\011" +
+    "\uffe9\013\uffe9\015\uffe9\016\uffe9\020\uffe9\001\002\000\004" +
     "\004\044\001\002\000\024\004\040\005\uffea\007\uffea\010" +
-    "\uffea\011\uffea\013\uffea\014\uffea\015\uffea\016\uffea\001\002" +
-    "\000\020\005\ufff5\007\ufff5\010\ufff5\013\ufff5\014\ufff5\015" +
-    "\ufff5\016\ufff5\001\002\000\010\002\ufffb\006\035\020\ufffb" +
-    "\001\002\000\006\005\ufff9\010\033\001\002\000\010\015" +
-    "\024\017\015\020\020\001\002\000\004\005\026\001\002" +
-    "\000\010\002\ufffc\006\027\020\ufffc\001\002\000\012\012" +
-    "\017\015\024\017\015\020\020\001\002\000\004\007\031" +
-    "\001\002\000\006\002\ufff8\020\ufff8\001\002\000\022\005" +
-    "\uffec\007\uffec\010\uffec\011\uffec\013\uffec\014\uffec\015\uffec" +
-    "\016\uffec\001\002\000\012\012\017\015\024\017\015\020" +
+    "\uffea\011\uffea\013\uffea\015\uffea\016\uffea\020\uffea\001\002" +
+    "\000\020\005\ufff5\007\ufff5\010\ufff5\013\ufff5\015\ufff5\016" +
+    "\ufff5\020\ufff5\001\002\000\010\002\ufffb\006\035\022\ufffb" +
+    "\001\002\000\006\005\ufff9\010\033\001\002\000\010\016" +
+    "\024\021\015\022\020\001\002\000\004\005\026\001\002" +
+    "\000\010\002\ufffc\006\027\022\ufffc\001\002\000\012\012" +
+    "\017\016\024\021\015\022\020\001\002\000\004\007\031" +
+    "\001\002\000\006\002\ufff8\022\ufff8\001\002\000\022\005" +
+    "\uffec\007\uffec\010\uffec\011\uffec\013\uffec\015\uffec\016\uffec" +
+    "\020\uffec\001\002\000\012\012\017\016\024\021\015\022" +
     "\020\001\002\000\004\005\ufffa\001\002\000\012\012\017" +
-    "\015\024\017\015\020\020\001\002\000\004\007\037\001" +
-    "\002\000\006\002\ufff7\020\ufff7\001\002\000\014\005\041" +
-    "\012\017\015\024\017\015\020\020\001\002\000\022\005" +
-    "\ufffb\007\ufffb\010\ufffb\011\ufffb\013\ufffb\014\ufffb\015\ufffb" +
-    "\016\ufffb\001\002\000\004\005\043\001\002\000\022\005" +
-    "\ufffc\007\ufffc\010\ufffc\011\ufffc\013\ufffc\014\ufffc\015\ufffc" +
-    "\016\ufffc\001\002\000\012\012\017\015\024\017\015\020" +
+    "\016\024\021\015\022\020\001\002\000\004\007\037\001" +
+    "\002\000\006\002\ufff7\022\ufff7\001\002\000\014\005\041" +
+    "\012\017\016\024\021\015\022\020\001\002\000\022\005" +
+    "\ufffb\007\ufffb\010\ufffb\011\ufffb\013\ufffb\015\ufffb\016\ufffb" +
+    "\020\ufffb\001\002\000\004\005\043\001\002\000\022\005" +
+    "\ufffc\007\ufffc\010\ufffc\011\ufffc\013\ufffc\015\ufffc\016\ufffc" +
+    "\020\ufffc\001\002\000\012\012\017\016\024\021\015\022" +
     "\020\001\002\000\004\005\056\001\002\000\012\005\uffef" +
-    "\014\050\015\052\016\047\001\002\000\012\012\017\015" +
-    "\024\017\015\020\020\001\002\000\012\012\017\015\024" +
-    "\017\015\020\020\001\002\000\004\005\ufff3\001\002\000" +
-    "\012\012\017\015\024\017\015\020\020\001\002\000\004" +
-    "\005\ufff0\001\002\000\004\005\ufff2\001\002\000\004\005" +
-    "\ufff1\001\002\000\012\012\017\015\024\017\015\020\020" +
-    "\001\002\000\004\013\060\001\002\000\012\012\017\015" +
-    "\024\017\015\020\020\001\002\000\020\005\ufff4\007\ufff4" +
-    "\010\ufff4\013\ufff4\014\ufff4\015\ufff4\016\ufff4\001\002\000" +
-    "\020\005\ufff6\007\ufff6\010\ufff6\013\ufff6\014\ufff6\015\ufff6" +
-    "\016\ufff6\001\002\000\010\015\024\017\015\020\020\001" +
+    "\015\047\016\052\020\050\001\002\000\012\012\017\016" +
+    "\024\021\015\022\020\001\002\000\012\012\017\016\024" +
+    "\021\015\022\020\001\002\000\004\005\ufff3\001\002\000" +
+    "\012\012\017\016\024\021\015\022\020\001\002\000\004" +
+    "\005\ufff0\001\002\000\004\005\ufff1\001\002\000\004\005" +
+    "\ufff2\001\002\000\012\012\017\016\024\021\015\022\020" +
+    "\001\002\000\004\013\060\001\002\000\012\012\017\016" +
+    "\024\021\015\022\020\001\002\000\020\005\ufff4\007\ufff4" +
+    "\010\ufff4\013\ufff4\015\ufff4\016\ufff4\020\ufff4\001\002\000" +
+    "\020\005\ufff6\007\ufff6\010\ufff6\013\ufff6\015\ufff6\016\ufff6" +
+    "\020\ufff6\001\002\000\010\016\024\021\015\022\020\001" +
     "\002\000\022\005\uffed\007\uffed\010\uffed\011\063\013\uffed" +
-    "\014\uffed\015\uffed\016\uffed\001\002\000\020\005\uffee\007" +
-    "\uffee\010\uffee\013\uffee\014\uffee\015\uffee\016\uffee\001\002" +
+    "\015\uffed\016\uffed\020\uffed\001\002\000\020\005\uffee\007" +
+    "\uffee\010\uffee\013\uffee\015\uffee\016\uffee\020\uffee\001\002" +
     "" });
 
   /** Access to parse-action table. */
@@ -163,26 +163,14 @@ public class Parser2 extends java_cup.runtime.lr_parser {
   public java_cup.runtime.Symbol scan()
     throws java.lang.Exception
     {
-
-    Symbol sym = s2.next_token();  
-    System.out.println("Token_parser2: " + sym2.terminalNames[sym.sym] + " | Value: " + sym.value);
-    
-    // Debugging: εκτυπώνει το τελευταίο token που αποδέχτηκε ο parser
-    if (sym.sym != 0) {
-        System.out.println("Last accepted token: " + sym2.terminalNames[sym.sym] + " | Value: " + sym.value);
-    } else {
-        System.out.println("Parser reached EOF.");
-    }
-
-    return sym;
-
+ return s.next_token(); 
     }
 
 
     // Connect this parser to a scanner!
-    Scanner2 s2;
+    Scanner s;
     String functionDefinitions = "";  // Θα κρατάμε εδώ όλες τις συναρτήσεις
-    Parser2(Scanner2 s2) { this.s2 = s2; }
+    Parser2(Scanner s) { this.s = s; }
 
 
 /** Cup generated class to encapsulate user supplied action code.*/
@@ -451,7 +439,7 @@ class CUP$Parser2$actions {
           return CUP$Parser2$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 16: // condition_tail ::= EQUAL expr 
+          case 16: // condition_tail ::= LOG_EQUAL expr 
             {
               String RESULT =null;
 		int e2left = ((java_cup.runtime.Symbol)CUP$Parser2$stack.peek()).left;

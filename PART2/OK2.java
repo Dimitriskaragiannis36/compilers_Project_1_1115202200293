@@ -9,11 +9,11 @@ class OK2 {
         PrintWriter writer = new PrintWriter(new FileWriter("Translated.ir"));
 
         // Δημιουργία του πρώτου parser και σύνδεση με τον scanner
-        Parser p = new Parser(new Scanner(new InputStreamReader(System.in)));
+        Parser p = new Parser(new Scanner(new InputStreamReader(System.in)));  // Scanner για τον πρώτο parser
 
         try {
             // Ανάλυση και αποθήκευση εξόδου στο αρχείο Translated.ir
-            Symbol result = p.parse();  
+            Symbol result = p.parse();
             System.out.println("Result value: " + result.value); // Debugging
             writer.println(result.value);  // Αποθηκεύει το αποτέλεσμα στο αρχείο IR
             System.out.println("Parsing completed. Output saved to Translated.ir");
@@ -29,36 +29,14 @@ class OK2 {
         File file = new File("Translated.ir");
         System.out.println("File exists: " + file.exists() + ", Size: " + file.length());
 
-        // Διαβάζουμε το IR και το μετατρέπουμε σε Java
-        StringBuilder irContent = new StringBuilder();
-        BufferedReader br = new BufferedReader(new FileReader("Translated.ir"));
-        String line;
-        while ((line = br.readLine()) != null) {
-            irContent.append(line).append("\n");
-        }
-        br.close();
-
-        System.out.println("IR content read from file: \n" + irContent.toString());
-
-        // Εξασφάλιση ότι δεν υπάρχουν κενά
-        String irString = irContent.toString().trim();
-        System.out.println("Scanner2 Input (Trimmed):\n" + irString);
-
-        // Δημιουργία του δεύτερου scanner και εκτύπωση των tokens που αναγνωρίζει
-        Scanner2 scannerIR = new Scanner2(new StringReader(irString));
-        java_cup.runtime.Symbol token;
-        System.out.println("Tokens from Translated.ir:");
-        try {
-            while ((token = scannerIR.next_token()).sym != 0) {
-                System.out.println("Token_scanner2: " + sym.terminalNames[token.sym] + " | Value: " + token.value);
-            }
-        } catch (Exception e) {
-            System.err.println("Scanner2 error: " + e.getMessage());
-        }
-
         // Δημιουργία του δεύτερου parser για μετατροπή IR σε Java
+        Scanner scanner2 = new Scanner(new FileReader("Translated.ir"));
+        Symbol token;
+        while ((token = scanner2.next_token()).sym != sym.EOF) {  
+            System.out.println("Token: " + token);
+        }
         PrintWriter writerJava = new PrintWriter(new FileWriter("Translated.java"));
-        Parser2 p2 = new Parser2(scannerIR);
+        Parser2 p2 = new Parser2(new Scanner(new FileReader("Translated.ir")));  
 
         try {
             Symbol result2 = p2.parse();

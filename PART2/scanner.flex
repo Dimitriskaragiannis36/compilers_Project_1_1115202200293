@@ -1,5 +1,6 @@
 import java_cup.runtime.*;
 
+
 %%
 /* ----------------- Options and Declarations Section----------------- */
 
@@ -73,6 +74,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 "suffix"     { return new Symbol(sym.SUFFIX, yytext()); }
 "prefix"     { return new Symbol(sym.PREFIX, yytext()); }
 "="          { return new Symbol(sym.EQUAL, yytext()); }
+"&&"     { return new Symbol(sym.LOG_EQUAL, yytext()); }
 "EOF"          { return new Symbol(sym.EOF, yytext()); }
 
 /* operators */

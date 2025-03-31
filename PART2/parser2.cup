@@ -3,26 +3,14 @@ import java_cup.runtime.*;
 
 parser code {:
     // Connect this parser to a scanner!
-    Scanner2 s2;
+    Scanner s;
     String functionDefinitions = "";  // Θα κρατάμε εδώ όλες τις συναρτήσεις
-    Parser2(Scanner2 s2) { this.s2 = s2; }
+    Parser2(Scanner s) { this.s = s; }
 :};
+
 
 /* Define how to connect to the scanner */
-scan with {:
-    Symbol sym = s2.next_token();  
-    System.out.println("Token_parser2: " + sym2.terminalNames[sym.sym] + " | Value: " + sym.value);
-    
-    // Debugging: εκτυπώνει το τελευταίο token που αποδέχτηκε ο parser
-    if (sym.sym != 0) {
-        System.out.println("Last accepted token: " + sym2.terminalNames[sym.sym] + " | Value: " + sym.value);
-    } else {
-        System.out.println("Parser reached EOF.");
-    }
-
-    return sym;
-:};
-
+scan with {: return s.next_token(); :};  
 
 
 
@@ -31,7 +19,7 @@ scan with {:
  */
 
 /* Terminals */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, PREFIX, REVERSE, EQUAL;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL; 
 terminal String STRING_LITERAL;
 terminal String ID;
 
@@ -100,7 +88,7 @@ condition ::= expr:e condition_tail:ct
 
 condition_tail ::= PREFIX expr:e2  
                       {: RESULT = ".startsWith(" + e2 + ")"; :}
-                | EQUAL expr:e2   
+                | LOG_EQUAL expr:e2   
                       {: RESULT = ".equals(" + e2 + ")"; :}
                 | REVERSE expr:e2  
                       {: RESULT = "new StringBuilder(" + e2 + ").reverse().toString()"; :}
@@ -113,3 +101,4 @@ term ::= REVERSE term:t  {: RESULT = "new StringBuilder(" + t + ").reverse().toS
        | STRING_LITERAL:s  {: RESULT = s; :}
        | ID:id            {: RESULT = id; :}
        | function_call:fc  {: RESULT = fc; :};
+       
