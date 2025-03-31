@@ -27,6 +27,9 @@ terminal String ID;
 
 /* Non-terminals */
 non terminal String program;
+non terminal String function_decls;
+non terminal String function_decl;
+non terminal String top_level_exprs;
 non terminal String stmt_list;
 non terminal String stmt;
 non terminal String function_call;
@@ -46,9 +49,24 @@ precedence left IF;
 precedence left CONCAT; 
 precedence left REVERSE;
 
-/* Grammar Rules */
-program ::= stmt_list:sl  {: RESULT = sl; :};
+/* Αρχή προγράμματος: Πρώτα δηλώσεις συναρτήσεων, μετά εκφράσεις */
+program ::= function_decls:fdecls top_level_exprs:texprs  
+    {: RESULT = fdecls + "\n" + texprs; :};
 
+/* Πολλές συναρτήσεις */
+function_decls ::= function_decl:fd function_decls:fds  
+    {: RESULT = fd + "\n" + fds; :}
+                 | function_decl:fd  
+    {: RESULT = fd; :};
+
+/* Μία συνάρτηση */
+function_decl ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
+    {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
+                | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
+    {: RESULT = id + "() {\n  " + e + "\n}"; :};
+
+/* Statements που έρχονται μετά τις δηλώσεις συναρτήσεων */
+top_level_exprs ::= stmt_list:sl  {: RESULT = sl; :};
 /* Λίστα από statements */
 stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
            | stmt:s               {: RESULT = s; :};
@@ -91,8 +109,17 @@ condition_tail ::= PREFIX expr:e2
                       {: RESULT = " = " + e2; :}
                 | ;
 
-expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
-           |                              {: RESULT = ""; :};
+expr_tail ::= CONCAT term:t expr_tail:et  
+              {: 
+                // Αν το t είναι διάστημα (διαχειρίζουμε το διάστημα ως ειδική περίπτωση), προσθέτουμε απευθείας.
+                if (t == "\" \"") {
+                    RESULT = " " + et;  // Τοποθετούμε το διάστημα " " χωρίς να κάνουμε σύγκριση
+                } else {
+                    // Αν το term δεν είναι το διάστημα, συνεχίζουμε κανονικά με την πρόσθεση
+                    RESULT = " + " + t + et;  
+                }
+              :}
+           | {: RESULT = ""; :};  // Αν δεν υπάρχει άλλη έκφραση, επιστρέφουμε κενό
 
 term ::= REVERSE term:t  {: RESULT = "reverse " + t; :}
        | STRING_LITERAL:s  {: RESULT = s; :}
