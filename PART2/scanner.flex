@@ -30,7 +30,7 @@ import java_cup.runtime.*;
   Code between %{ and %}, both of which must be at the beginning of a
   line, will be copied letter to letter into the lexer class source.
   Here you declare member variables and functions that are used inside
-  scanner actions.
+  scanner actions.  
 */
 
 %{

@@ -4,32 +4,28 @@
  */
 import java_cup.runtime.*;
 
-/**
- *  Usercode Components
- */
 parser code {:
     // Connect this parser to a scanner!
     Scanner s;
+    String functionDefinitions = "";  // Θα κρατάμε εδώ όλες τις συναρτήσεις
     Parser2(Scanner s) { this.s = s; }
 :};
 
+
 /* Define how to connect to the scanner */
-scan with {: return s.next_token(); :};
+scan with {: return s.next_token(); :};  
 
 /**
  *  Symbol Lists
  */
 
 /* Terminals */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL; 
 terminal String STRING_LITERAL;
 terminal String ID;
 
 /* Non-terminals */
 non terminal String program;
-non terminal String function_decls;
-non terminal String function_decl;
-non terminal String top_level_exprs;
 non terminal String stmt_list;
 non terminal String stmt;
 non terminal String function_call;
@@ -49,55 +45,61 @@ precedence left IF;
 precedence left CONCAT; 
 precedence left REVERSE;
 
-/* Αρχή προγράμματος: Πρώτα δηλώσεις συναρτήσεων, μετά εκφράσεις */
-program ::= function_decls:fdecls top_level_exprs:texprs  
-    {: RESULT = fdecls + "\n" + texprs; :};
+/* Grammar Rules */
+program ::= stmt_list:sl  {: 
+    RESULT = "public class Translated {\n" +
+             functionDefinitions +  // Εδώ θα μπαίνουν όλες οι συναρτήσεις
+             "  public static void main(String[] args) {\n" +
+             sl +  // Εδώ θα μπαίνουν οι κλήσεις συναρτήσεων και άλλες εκφράσεις
+             "  }\n" +
+             "}\n";
+:};
 
-/* Πολλές συναρτήσεις */
-function_decls ::= function_decl:fd function_decls:fds  
-    {: RESULT = fd + "\n" + fds; :}
-                 | function_decl:fd  
-    {: RESULT = fd; :};
-
-/* Μία συνάρτηση */
-function_decl ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-    {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
-                | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-    {: RESULT = id + "() {\n  " + e + "\n}"; :};
-
-/* Statements που έρχονται μετά τις δηλώσεις συναρτήσεων */
-top_level_exprs ::= stmt_list:sl  {: RESULT = sl; :};
-/* Λίστα από statements */
+/*Statement list */
 stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
            | stmt:s               {: RESULT = s; :};
 
-/* Ένα statement μπορεί να είναι μια κλήση συνάρτησης */
-stmt ::= function_call:fc  {: RESULT = fc; :};
+/* simple Statement*/
+stmt ::= function_call:fc  {: RESULT = "    System.out.println(" + fc + ");"; :}
+        |ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
+          {: 
+              functionDefinitions += "  public static String " + id + "(" + params + ") {\n" +
+                                     "    return " + e + ";\n" +
+                                     "  }\n"; 
+              RESULT = "";  
+          :}
+       | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
+          {: 
+              functionDefinitions += "  public static String " + id + "() {\n" +
+                                     "    return " + e + ";\n" +
+                                     "  }\n"; 
+              RESULT = "";  
+          :};
 
-/* Ορισμός μιας συνάρτησης */
-function_call ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
-               | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = id + "() {\n  " + e + "\n}"; :}
-               | ID:id LPAREN param_list:params RPAREN  
+/*function*/
+function_call ::= ID:id LPAREN param_list:params RPAREN  
                   {: RESULT = id + "(" + params + ")"; :}
                | ID:id LPAREN RPAREN  
                   {: RESULT = id + "()"; :};
 
-/* Λίστα παραμέτρων (comma-separated) */
+/* parameter list (comma-separated) */
 param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
              | expr:e                          {: RESULT = e; :};
 
-/* Υποστήριξη πράξεων μέσα στο σώμα της συνάρτησης */
+
+/* expressions */
 expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
       | if_expr:ie            {: RESULT = ie; :};
 
+/* if_else expressions */
 if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2  
               {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
 
+/* conditions */
 condition ::= expr:e condition_tail:ct  
     {: RESULT = e + ct; :};
 
+/* what follows a condition */
 condition_tail ::= PREFIX expr:e2  
                       {: RESULT = ".startsWith(" + e2 + ")"; :}
                 | LOG_EQUAL expr:e2   
@@ -106,18 +108,11 @@ condition_tail ::= PREFIX expr:e2
                       {: RESULT = "new StringBuilder(" + e2 + ").reverse().toString()"; :}
                 | ;  
 
-expr_tail ::= CONCAT term:t expr_tail:et  
-              {: 
-                // Αν το t είναι διάστημα (διαχειρίζουμε το διάστημα ως ειδική περίπτωση), προσθέτουμε απευθείας.
-                if (t == "\" \"") {
-                    RESULT = " " + et;  // Τοποθετούμε το διάστημα " " χωρίς να κάνουμε σύγκριση
-                } else {
-                    // Αν το term δεν είναι το διάστημα, συνεχίζουμε κανονικά με την πρόσθεση
-                    RESULT = " + " + t + et;  
-                }
-              :}
-           | {: RESULT = ""; :};  // Αν δεν υπάρχει άλλη έκφραση, επιστρέφουμε κενό
+/* what follows an expression */
+expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
+           |                              {: RESULT = ""; :};
 
+/*terms*/
 term ::= REVERSE term:t  {: RESULT = "new StringBuilder(" + t + ").reverse().toString()"; :}
        | STRING_LITERAL:s  {: RESULT = s; :}
        | ID:id            {: RESULT = id; :}

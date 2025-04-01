@@ -27,9 +27,6 @@ terminal String ID;
 
 /* Non-terminals */
 non terminal String program;
-non terminal String function_decls;
-non terminal String function_decl;
-non terminal String top_level_exprs;
 non terminal String stmt_list;
 non terminal String stmt;
 non terminal String function_call;
@@ -49,32 +46,17 @@ precedence left IF;
 precedence left CONCAT; 
 precedence left REVERSE;
 
-/* Αρχή προγράμματος: Πρώτα δηλώσεις συναρτήσεων, μετά εκφράσεις */
-program ::= function_decls:fdecls top_level_exprs:texprs  
-    {: RESULT = fdecls + "\n" + texprs; :};
+/* Grammar Rules */
+program ::= stmt_list:sl  {: RESULT = sl; :};
 
-/* Πολλές συναρτήσεις */
-function_decls ::= function_decl:fd function_decls:fds  
-    {: RESULT = fd + "\n" + fds; :}
-                 | function_decl:fd  
-    {: RESULT = fd; :};
-
-/* Μία συνάρτηση */
-function_decl ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-    {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
-                | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-    {: RESULT = id + "() {\n  " + e + "\n}"; :};
-
-/* Statements που έρχονται μετά τις δηλώσεις συναρτήσεων */
-top_level_exprs ::= stmt_list:sl  {: RESULT = sl; :};
-/* Λίστα από statements */
+/*Statement list */
 stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
            | stmt:s               {: RESULT = s; :};
 
-/* Ένα statement μπορεί να είναι μια κλήση συνάρτησης */
+/* simple Statement*/
 stmt ::= function_call:fc  {: RESULT = fc; :};
 
-/* Ορισμός μιας συνάρτησης */
+/*function*/
 function_call ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
                   {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
                | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
@@ -84,23 +66,26 @@ function_call ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE
                | ID:id LPAREN RPAREN  
                   {: RESULT = id + "()"; :};
 
-/* Λίστα παραμέτρων (comma-separated) */
+/* parameter list (comma-separated) */
 param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
              | expr:e                          {: RESULT = e; :};
 
-/* Υποστήριξη πράξεων μέσα στο σώμα της συνάρτησης */
+/* expressions */
 expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
       | if_expr:ie            {: RESULT = ie; :};
 
+/* if_else expressions */
 if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2  
               {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
 
+/* conditions */
 condition ::= expr:e condition_tail:ct  
     {: RESULT = ct.isEmpty() ? e :  
          (ct.startsWith(" prefix") ? e + ct :  
          (ct.startsWith(" = ") ? e + " prefix " + ct.substring(3) + " && " + ct.substring(3) + " prefix " + e  
                                : "reverse " + e + " prefix reverse " + ct.substring(8))); :};
 
+/* what follows a condition */
 condition_tail ::= PREFIX expr:e2  
                       {: RESULT = " prefix " + e2; :}
                 | SUFFIX expr:e2  
@@ -109,18 +94,10 @@ condition_tail ::= PREFIX expr:e2
                       {: RESULT = " = " + e2; :}
                 | ;
 
-expr_tail ::= CONCAT term:t expr_tail:et  
-              {: 
-                // Αν το t είναι διάστημα (διαχειρίζουμε το διάστημα ως ειδική περίπτωση), προσθέτουμε απευθείας.
-                if (t == "\" \"") {
-                    RESULT = " " + et;  // Τοποθετούμε το διάστημα " " χωρίς να κάνουμε σύγκριση
-                } else {
-                    // Αν το term δεν είναι το διάστημα, συνεχίζουμε κανονικά με την πρόσθεση
-                    RESULT = " + " + t + et;  
-                }
-              :}
-           | {: RESULT = ""; :};  // Αν δεν υπάρχει άλλη έκφραση, επιστρέφουμε κενό
-
+/* what follows an expression */
+expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
+           |                              {: RESULT = ""; :};
+/*terms*/
 term ::= REVERSE term:t  {: RESULT = "reverse " + t; :}
        | STRING_LITERAL:s  {: RESULT = s; :}
        | ID:id            {: RESULT = id; :}

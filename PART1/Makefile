@@ -1,7 +1,7 @@
 #φάκελος
 SRC_DIR = PART1
 
-#Κύρια κλάση
+#Κύρια κλάση  
 MAIN_CLASS = Parser
 
 #Compilers

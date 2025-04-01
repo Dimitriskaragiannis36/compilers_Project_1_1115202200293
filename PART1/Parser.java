@@ -1,7 +1,7 @@
 import java.io.IOException;  //βιβλιοθήκη για εξαίρεση-αν δεν την βάλω θα έχω θέμα
 import java.io.InputStream;  //βιβλιοθήκη για εισαγωγή από πληκτρολόγιο
 public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
-    private InputStream in;  //μεταβλητή εισόδου
+    private final InputStream in;  //μεταβλητή εισόδου
     private int lookahead;  //int γιατί το in.read() διαβάζει μόνο int
 
     public Parser(InputStream in) throws IOException {  //ο κατασκευαστής 
