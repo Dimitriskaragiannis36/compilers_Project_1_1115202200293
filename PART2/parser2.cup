@@ -4,117 +4,175 @@
  */
 import java_cup.runtime.*;
 
+/**
+ *  Usercode Components
+ */
 parser code {:
     // Connect this parser to a scanner!
     Scanner s;
-    String functionDefinitions = "";  // Θα κρατάμε εδώ όλες τις συναρτήσεις
     Parser2(Scanner s) { this.s = s; }
 :};
 
-
 /* Define how to connect to the scanner */
-scan with {: return s.next_token(); :};  
+scan with {: return s.next_token(); :};
 
 /**
  *  Symbol Lists
  */
 
-/* Terminals */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL; 
+/* Terminals - (remember the scanner) */
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL;
 terminal String STRING_LITERAL;
 terminal String ID;
 
 /* Non-terminals */
 non terminal String program;
-non terminal String stmt_list;
-non terminal String stmt;
-non terminal String function_call;
-non terminal String param_list;
+non terminal String fun_list;
+non terminal String fun_call;
+non terminal String fun_def;
+non terminal String par_list;
+non terminal String par;
 non terminal String expr;
-non terminal String expr_tail;
-non terminal String term;
 non terminal String if_expr;
-non terminal String condition;
-non terminal String condition_tail;
+non terminal String expr2;
+non terminal String term_list;
+non terminal String term;
+non terminal String term2;
+non terminal String if_expr_reverse;
+non terminal String if_expr_string;
+non terminal String if_expr_id;
+
 
 
 /**
  *  Precedence Declarations
  */
-precedence left IF;
+precedence left IF, ELSE;
 precedence left CONCAT; 
 precedence left REVERSE;
+precedence left COMMA;
 
 /* Grammar Rules */
-program ::= stmt_list:sl  {: 
+
+/* Functions followed by function calls */
+program ::= fun_list:fl fun_call:fc  
+  {: 
     RESULT = "public class Translated {\n" +
-             functionDefinitions +  // Εδώ θα μπαίνουν όλες οι συναρτήσεις
              "  public static void main(String[] args) {\n" +
-             sl +  // Εδώ θα μπαίνουν οι κλήσεις συναρτήσεων και άλλες εκφράσεις
-             "  }\n" +
-             "}\n";
-:};
-
-/*Statement list */
-stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
-           | stmt:s               {: RESULT = s; :};
-
-/* simple Statement*/
-stmt ::= function_call:fc  {: RESULT = "    System.out.println(" + fc + ");"; :}
-        |ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-          {: 
-              functionDefinitions += "  public static String " + id + "(" + params + ") {\n" +
-                                     "    return " + e + ";\n" +
-                                     "  }\n"; 
-              RESULT = "";  
-          :}
-       | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-          {: 
-              functionDefinitions += "  public static String " + id + "() {\n" +
-                                     "    return " + e + ";\n" +
-                                     "  }\n"; 
-              RESULT = "";  
-          :};
-
-/*function*/
-function_call ::= ID:id LPAREN param_list:params RPAREN  
-                  {: RESULT = id + "(" + params + ")"; :}
-               | ID:id LPAREN RPAREN  
-                  {: RESULT = id + "()"; :};
-
-/* parameter list (comma-separated) */
-param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
-             | expr:e                          {: RESULT = e; :};
+             fc + "  }\n\n" + fl + "}";
+  :};
 
 
-/* expressions */
-expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
-      | if_expr:ie            {: RESULT = ie; :};
+/* -------------------FUNCTION DEFINITION PART------------ */
+/* Function definitions followed by functions definitions */
+fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd + "\n"; :}
+          | fun_def:fd               {: RESULT = fd + "\n"; :}
+        ;
 
-/* if_else expressions */
-if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2  
-              {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
+/* Function definitions */
+fun_def ::= ID:id LPAREN par_list:pl RPAREN LBRACE expr:e RBRACE
+            {: RESULT = id + "(" + pl + ") {\n  " + e + "\n}"; :}
+          | ID:id LPAREN RPAREN LBRACE expr:e RBRACE
+            {: RESULT = id + "() {\n  " + e + "\n}"; :}
+        ;
 
-/* conditions */
-condition ::= expr:e condition_tail:ct  
-    {: RESULT = e + ct; :};
+/* List of parameters */
+par_list ::= par:p                 {: RESULT = p; :}
+           | par_list:pl COMMA par:p  {: RESULT = pl + ", " + p; :}
+        ;
 
-/* what follows a condition */
-condition_tail ::= PREFIX expr:e2  
-                      {: RESULT = ".startsWith(" + e2 + ")"; :}
-                | LOG_EQUAL expr:e2   
-                      {: RESULT = ".equals(" + e2 + ")"; :}
-                | REVERSE expr:e2  
-                      {: RESULT = "new StringBuilder(" + e2 + ").reverse().toString()"; :}
-                | ;  
+/* Parameter */
+par ::= ID:id  {: RESULT = id; :};
 
-/* what follows an expression */
-expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
-           |                              {: RESULT = ""; :};
+/* Expressions */
+expr ::= STRING_LITERAL:str  {: RESULT = str; :}
+       | ID:id               {: RESULT = id; :}
+       | expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
+       | IF LPAREN if_expr:cond RPAREN expr:e1 ELSE expr:e2  
+         {: RESULT = "if (" + cond + ")\n    " + e1 + "\n " + " else " + "\n    " + e2; :}
+       | ID:id LPAREN expr2:ex RPAREN  
+         {: RESULT = id + "(" + ex + ")"; :}
+       | ID:id LPAREN RPAREN  
+         {: RESULT = id + "()"; :}
+       ; 
 
-/*terms*/
-term ::= REVERSE term:t  {: RESULT = "new StringBuilder(" + t + ").reverse().toString()"; :}
-       | STRING_LITERAL:s  {: RESULT = s; :}
-       | ID:id            {: RESULT = id; :}
-       | function_call:fc  {: RESULT = fc; :};
-       
+/* IF expression conditions */
+if_expr ::= if_expr_reverse: ifer    {: RESULT = ifer; :}
+          | if_expr_string: ifes     {: RESULT = ifes; :}
+          | if_expr_id: ifed         {: RESULT = ifed; :}
+          ;
+
+/* REVERSE-based conditions */
+if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
+                      {: RESULT = "reverse " + str + " prefix reverse " + id; :}
+                  | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
+                      {: RESULT = "reverse reverse " + str + " prefix reverse reverse " + id; :}
+                  | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
+                      {: RESULT = "reverse reverse" + str + " reverse prefix reverse " + id + "&& reverse reverse" + id + " reverse prefix reverse " + str ; :}
+                  | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
+                      {: RESULT = "reverse" + id + " prefix reverse " + str; :}
+                  | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
+                      {: RESULT = "reverse reverse " + id + " prefix reverse reverse " + str; :}
+                  | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
+                      {: RESULT = "reverse reverse" + id + " reverse prefix reverse " + str + "&& reverse reverse" + str + " reverse prefix reverse " + id ; :}
+                  ;
+
+/* STRING_LITERAL-based conditions */
+if_expr_string ::= STRING_LITERAL:str PREFIX ID:id  
+                      {: RESULT = str + " prefix " + id; :}
+                 | STRING_LITERAL:str SUFFIX ID:id  
+                      {: RESULT = " reverse " + str + " prefix reverse " + id; :}
+                 | STRING_LITERAL:str EQUAL ID:id  
+                      {: RESULT = " reverse" + str + " prefix reverse " + id + "&& reverse" + id + " prefix reverse " + str ; :}
+                 ;
+
+/* ID-based conditions */
+if_expr_id ::= ID:id PREFIX STRING_LITERAL:str  
+                  {: RESULT = id + " prefix " + str; :}
+             | ID:id SUFFIX STRING_LITERAL:str  
+                  {: RESULT = " reverse " + id + " prefix reverse " + str; :}
+             | ID:id EQUAL STRING_LITERAL:str  
+                  {: RESULT = " reverse" + id + " prefix reverse " + str + "&& reverse" + str + " prefix reverse " + id ; :}
+             ;
+
+/* Expressions 2 */
+expr2 ::= STRING_LITERAL:str  {: RESULT = str; :}
+        | ID:id LPAREN expr2:ex RPAREN  
+          {: RESULT = id + "(" + ex + ")"; :}
+        | expr2:e1 COMMA expr2:e2  
+          {: RESULT = e1 + ", " + e2; :}
+        | ID:id  
+          {: RESULT = id; :}
+        ;
+
+
+/* ------------------FUNCTION CALLS PART--------------------- */
+/* Function calls */
+fun_call ::= term_list:tl  {: RESULT = tl; :}
+            | /* empty */  {: RESULT = ""; :}
+            ;
+
+/* List of terms */
+term_list ::= term_list:tl term:t  {: RESULT = tl + "\n" + t; :}
+            | term:t               {: RESULT = t; :}
+            ;
+
+/* term */
+term ::= ID:id LPAREN term2:t2 RPAREN  
+          {: RESULT = id + "(" + t2 + ")"; :}
+        | ID:id LPAREN RPAREN  
+          {: RESULT = id + "()"; :}
+        ;
+
+/* term2 */
+term2 ::= term2:t2 COMMA STRING_LITERAL:str  
+           {: RESULT = t2 + ", " + str; :}
+         | term2:t2 COMMA term:t  
+           {: RESULT = t2 + ", " + t; :}
+         | STRING_LITERAL:str  
+           {: RESULT = str; :}
+         | term:t  
+           {: RESULT = t; :}
+         ;
+ 
+
