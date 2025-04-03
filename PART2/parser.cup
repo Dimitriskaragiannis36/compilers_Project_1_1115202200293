@@ -52,73 +52,107 @@ precedence left COMMA;
 /* Grammar Rules */
 
 /* Functions followed by function calls */
-program ::= fun_list fun_call; 
+program ::= fun_list:fl fun_call:fc  {: RESULT = fl + "\n" + fc; :};
 
-/*FUNCTION DECLARATION PART*/
-/* Function definitions followed by functions definitions  */
-fun_list ::= fun_list fun_def        
-          | fun_def
+
+/* -------------------FUNCTION DEFINITION PART------------ */
+/* Function definitions followed by functions definitions */
+fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd; :}
+          | fun_def:fd               {: RESULT = fd; :}
         ;
 
-fun_def ::= ID LPAREN par_list RPAREN LBRACE expr RBRACE
-            | ID LPAREN RPAREN LBRACE expr RBRACE
-            ;
-
-par_list ::=par 
-             |par_list COMMA par
-             ;
-
-par ::= ID
+/* Function definitions */
+fun_def ::= ID:id LPAREN par_list:pl RPAREN LBRACE expr:e RBRACE
+            {: RESULT = id + "(" + pl + ") {\n  " + e + "\n}"; :}
+          | ID:id LPAREN RPAREN LBRACE expr:e RBRACE
+            {: RESULT = id + "() {\n  " + e + "\n}"; :}
         ;
 
-expr  ::= STRING_LITERAL
-        | ID
-        | expr CONCAT expr
-        | IF LPAREN if_expr RPAREN expr ELSE expr
-        | ID LPAREN expr2 RPAREN
-        | ID LPAREN RPAREN
-        ;  
-
-if_expr ::= REVERSE STRING_LITERAL PREFIX REVERSE ID
-          | REVERSE STRING_LITERAL SUFFIX REVERSE ID
-          | REVERSE STRING_LITERAL EQUAL REVERSE ID
-          | STRING_LITERAL PREFIX ID
-          | STRING_LITERAL SUFFIX ID
-          | STRING_LITERAL EQUAL ID
-          | REVERSE ID PREFIX REVERSE STRING_LITERAL
-          | REVERSE ID SUFFIX REVERSE STRING_LITERAL
-          | REVERSE ID EQUAL REVERSE STRING_LITERAL 
-          | ID PREFIX STRING_LITERAL
-          | ID SUFFIX STRING_LITERAL
-          | ID EQUAL STRING_LITERAL
-          ;  
-
-expr2 ::= STRING_LITERAL
-        | ID LPAREN expr2 RPAREN 
-        | expr2 COMMA expr2
-        | ID
-        ;  
-
-
-/* FUNCTION CALLS PART */            
-
-fun_call ::= term_list
-            | /*empty*/
-            ;
-
-
-term_list ::= term_list term
-            | term
-            ;
-
-
-term ::= ID LPAREN term2 RPAREN
-        | ID LPAREN RPAREN
+/* List of parameters */
+par_list ::= par:p                 {: RESULT = p; :}
+           | par_list:pl COMMA par:p  {: RESULT = pl + ", " + p; :}
         ;
 
-term2 ::= term2 COMMA STRING_LITERAL
-           | term2 COMMA term
-           | STRING_LITERAL
-           | term
-           ;   
+/* Parameter */
+par ::= ID:id  {: RESULT = id; :};
+
+/* Expressions */
+expr ::= STRING_LITERAL:str  {: RESULT = str; :}
+       | ID:id               {: RESULT = id; :}
+       | expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
+       | IF LPAREN if_expr:cond RPAREN expr:e1 ELSE expr:e2  
+         {: RESULT = "if (" + cond + ")\n    " + e1 + " else " + e2; :}
+       | ID:id LPAREN expr2:ex RPAREN  
+         {: RESULT = id + "(" + ex + ")"; :}
+       | ID:id LPAREN RPAREN  
+         {: RESULT = id + "()"; :}
+       ; 
+
+/* IF expression conditions */
+if_expr ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
+              {: RESULT = "reverse(" + str + ") startsWith reverse(" + id + ")"; :}
+          | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
+              {: RESULT = "reverse(" + str + ") endsWith reverse(" + id + ")"; :}
+          | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
+              {: RESULT = "reverse(" + str + ") == reverse(" + id + ")"; :}
+          | STRING_LITERAL:str PREFIX ID:id  
+              {: RESULT = str + " startsWith " + id; :}
+          | STRING_LITERAL:str SUFFIX ID:id  
+              {: RESULT = str + " endsWith " + id; :}
+          | STRING_LITERAL:str EQUAL ID:id  
+              {: RESULT = str + " == " + id; :}
+          | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
+              {: RESULT = "reverse(" + id + ") startsWith reverse(" + str + ")"; :}
+          | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
+              {: RESULT = "reverse(" + id + ") endsWith reverse(" + str + ")"; :}
+          | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
+              {: RESULT = "reverse(" + id + ") == reverse(" + str + ")"; :}
+          | ID:id PREFIX STRING_LITERAL:str  
+              {: RESULT = id + " startsWith " + str; :}
+          | ID:id SUFFIX STRING_LITERAL:str  
+              {: RESULT = id + " endsWith " + str; :}
+          | ID:id EQUAL STRING_LITERAL:str  
+              {: RESULT = id + " == " + str; :}
+        ;
+
+/* Expressions 2 */
+expr2 ::= STRING_LITERAL:str  {: RESULT = str; :}
+        | ID:id LPAREN expr2:ex RPAREN  
+          {: RESULT = id + "(" + ex + ")"; :}
+        | expr2:e1 COMMA expr2:e2  
+          {: RESULT = e1 + ", " + e2; :}
+        | ID:id  
+          {: RESULT = id; :}
+        ;
+
+
+/* ------------------FUNCTION CALLS PART--------------------- */
+/* Function calls */
+fun_call ::= term_list:tl  {: RESULT = tl; :}
+            | /* empty */  {: RESULT = ""; :}
+            ;
+
+/* List of terms */
+term_list ::= term_list:tl term:t  {: RESULT = tl + "\n" + t; :}
+            | term:t               {: RESULT = t; :}
+            ;
+
+/* term */
+term ::= ID:id LPAREN term2:t2 RPAREN  
+          {: RESULT = id + "(" + t2 + ")"; :}
+        | ID:id LPAREN RPAREN  
+          {: RESULT = id + "()"; :}
+        ;
+
+/* term2 */
+term2 ::= term2:t2 COMMA STRING_LITERAL:str  
+           {: RESULT = t2 + ", " + str; :}
+         | term2:t2 COMMA term:t  
+           {: RESULT = t2 + ", " + t; :}
+         | STRING_LITERAL:str  
+           {: RESULT = str; :}
+         | term:t  
+           {: RESULT = t; :}
+         ;
+ 
 
