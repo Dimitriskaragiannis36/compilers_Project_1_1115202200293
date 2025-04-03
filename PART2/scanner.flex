@@ -57,7 +57,7 @@ import java_cup.runtime.*;
    \r\n. */
 LineTerminator = \r|\n|\r\n
 Identifier     = [a-zA-Z_][a-zA-Z_0-9]*
-StringChar     = [^\n\r\"\\]
+StringChar     = [^\n\r\"\\] 
 
 /* White space is a line terminator, space, tab, or line feed. */
 WhiteSpace     = {LineTerminator} | [ \t\f]
@@ -79,7 +79,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 
 /* operators */
 "+"        { return new Symbol(sym.CONCAT, yytext()); }
-/*"~"        { return new Symbol(sym.REVERSE, yytext()); } */
+"reverse"  { return new Symbol(sym.REVERSE, yytext()); } 
 "("        { return new Symbol(sym.LPAREN, yytext()); }
 ")"        { return new Symbol(sym.RPAREN, yytext()); }
 "{"        { return new Symbol(sym.LBRACE, yytext()); }
