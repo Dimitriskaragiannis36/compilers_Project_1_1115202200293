@@ -20,86 +20,105 @@ scan with {: return s.next_token(); :};
  *  Symbol Lists
  */
 
-/* Terminals */
+/* Terminals - (remember the scanner) */
 terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL;
 terminal String STRING_LITERAL;
 terminal String ID;
 
 /* Non-terminals */
 non terminal String program;
-non terminal String stmt_list;
-non terminal String stmt;
-non terminal String function_call;
-non terminal String param_list;
+non terminal String fun_list;
+non terminal String fun_call;
+non terminal String fun_def;
+non terminal String par_list;
+non terminal String par;
 non terminal String expr;
-non terminal String expr_tail;
-non terminal String term;
 non terminal String if_expr;
-non terminal String condition;
-non terminal String condition_tail;
+non terminal String expr2;
+non terminal String term_list;
+non terminal String term;
+non terminal String term2;
+
 
 
 /**
  *  Precedence Declarations
  */
-precedence left IF;
+precedence left IF, ELSE;
 precedence left CONCAT; 
 precedence left REVERSE;
+precedence left COMMA;
 
 /* Grammar Rules */
-program ::= stmt_list:sl  {: RESULT = sl; :};
 
-/*Statement list */
-stmt_list ::= stmt:s stmt_list:sl  {: RESULT = s + "\n" + sl; :}
-           | stmt:s               {: RESULT = s; :};
+/* Functions followed by function calls */
+program ::= fun_list fun_call; 
 
-/* simple Statement*/
-stmt ::= function_call:fc  {: RESULT = fc; :};
+/*FUNCTION DECLARATION PART*/
+/* Function definitions followed by functions definitions  */
+fun_list ::= fun_list fun_def        
+          | fun_def
+        ;
 
-/*function*/
-function_call ::= ID:id LPAREN param_list:params RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = id + "(" + params + ") {\n  " + e + "\n}"; :}
-               | ID:id LPAREN RPAREN LBRACE expr:e RBRACE  
-                  {: RESULT = id + "() {\n  " + e + "\n}"; :}
-               | ID:id LPAREN param_list:params RPAREN  
-                  {: RESULT = id + "(" + params + ")"; :}
-               | ID:id LPAREN RPAREN  
-                  {: RESULT = id + "()"; :};
+fun_def ::= ID LPAREN par_list RPAREN LBRACE expr RBRACE
+            | ID LPAREN RPAREN LBRACE expr RBRACE
+            ;
 
-/* parameter list (comma-separated) */
-param_list ::= expr:e COMMA param_list:params  {: RESULT = e + ", " + params; :}
-             | expr:e                          {: RESULT = e; :};
+par_list ::=par 
+             |par_list COMMA par
+             ;
 
-/* expressions */
-expr ::= term:t expr_tail:et  {: RESULT = t + et; :}
-      | if_expr:ie            {: RESULT = ie; :};
+par ::= ID
+        ;
 
-/* if_else expressions */
-if_expr ::= IF LPAREN condition:c RPAREN expr:e1 ELSE expr:e2  
-              {: RESULT = "if (" + c + ") " + e1 + " else " + e2; :};
+expr  ::= STRING_LITERAL
+        | ID
+        | expr CONCAT expr
+        | IF LPAREN if_expr RPAREN expr ELSE expr
+        | ID LPAREN expr2 RPAREN
+        | ID LPAREN RPAREN
+        ;  
 
-/* conditions */
-condition ::= expr:e condition_tail:ct  
-    {: RESULT = ct.isEmpty() ? e :  
-         (ct.startsWith(" prefix") ? e + ct :  
-         (ct.startsWith(" = ") ? e + " prefix " + ct.substring(3) + " && " + ct.substring(3) + " prefix " + e  
-                               : "reverse " + e + " prefix reverse " + ct.substring(8))); :};
+if_expr ::= REVERSE STRING_LITERAL PREFIX REVERSE ID
+          | REVERSE STRING_LITERAL SUFFIX REVERSE ID
+          | REVERSE STRING_LITERAL EQUAL REVERSE ID
+          | STRING_LITERAL PREFIX ID
+          | STRING_LITERAL SUFFIX ID
+          | STRING_LITERAL EQUAL ID
+          | REVERSE ID PREFIX REVERSE STRING_LITERAL
+          | REVERSE ID SUFFIX REVERSE STRING_LITERAL
+          | REVERSE ID EQUAL REVERSE STRING_LITERAL 
+          | ID PREFIX STRING_LITERAL
+          | ID SUFFIX STRING_LITERAL
+          | ID EQUAL STRING_LITERAL
+          ;  
 
-/* what follows a condition */
-condition_tail ::= PREFIX expr:e2  
-                      {: RESULT = " prefix " + e2; :}
-                | SUFFIX expr:e2  
-                      {: RESULT = "reverse " + e2; :} // Επιστρέφουμε το e2 και το χρησιμοποιούμε σωστά στο condition
-                | EQUAL expr:e2   
-                      {: RESULT = " = " + e2; :}
-                | ;
+expr2 ::= STRING_LITERAL
+        | ID LPAREN expr2 RPAREN 
+        | expr2 COMMA expr2
+        | ID
+        ;  
 
-/* what follows an expression */
-expr_tail ::= CONCAT term:t expr_tail:et  {: RESULT = " + " + t + et; :}
-           |                              {: RESULT = ""; :};
-/*terms*/
-term ::= REVERSE term:t  {: RESULT = "reverse " + t; :}
-       | STRING_LITERAL:s  {: RESULT = s; :}
-       | ID:id            {: RESULT = id; :}
-       | function_call:fc  {: RESULT = fc; :};
+
+/* FUNCTION CALLS PART */            
+
+fun_call ::= term_list
+            | /*empty*/
+            ;
+
+
+term_list ::= term_list term
+            | term
+            ;
+
+
+term ::= ID LPAREN term2 RPAREN
+        | ID LPAREN RPAREN
+        ;
+
+term2 ::= term2 COMMA STRING_LITERAL
+           | term2 COMMA term
+           | STRING_LITERAL
+           | term
+           ;   
 
