@@ -72,12 +72,12 @@ fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd + "\n"; :}
 /* Function definitions */
 fun_def ::= ID:id LPAREN par_list:pl RPAREN LBRACE expr:e RBRACE
               {: RESULT = "  public static String " + id + "(" + pl + ") {\n" + 
-               "    return " + e + ";\n" + 
+                e + "\n" + 
                "  }\n"; 
               :}
           | ID:id LPAREN RPAREN LBRACE expr:e RBRACE
               {: RESULT = "  public static String " + id + "() {\n" + 
-               "    return " + e + ";\n" + 
+                e + "\n" + 
                "  }\n"; 
               :}
         ;
@@ -91,11 +91,12 @@ par_list ::= par:p                 {: RESULT = "String " + p; :}
 par ::= ID:id  {: RESULT = id; :};
 
 /* Expressions */
-expr ::= STRING_LITERAL:str  {: RESULT = str; :}
-       | ID:id               {: RESULT = id; :}
-       | expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
+expr ::= STRING_LITERAL:str  {: RESULT = "    return " + str + ";"; :}
+       | ID:id               {: RESULT = "    return " + id; :}
+       | expr:e1 CONCAT expr:e2  {: RESULT = "    return " + e1.replace("    return ", "").replace(";", "") + 
+                           " + " + e2.replace("    return ", "") + ";"; :}
        | IF LPAREN if_expr:cond RPAREN expr:e1 ELSE expr:e2  
-         {: RESULT = "if (" + cond + ")\n    " + e1 + "\n " + " else " + "\n    " + e2; :}
+         {: RESULT = "if (" + cond + ") {\n    return " + e1 + ";\n  } else {\n" + e2 + ";\n  }"; :}
        | ID:id LPAREN expr2:ex RPAREN  
          {: RESULT = id + "(" + ex + ")"; :}
        | ID:id LPAREN RPAREN  

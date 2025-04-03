@@ -66,7 +66,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 
 %%
 /* ------------------------Lexical Rules Section---------------------- */
-
+  
 <YYINITIAL> {
 /* Keywords */   
 "if"         { return new Symbol(sym.IF, yytext()); }

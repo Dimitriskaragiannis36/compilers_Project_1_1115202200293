@@ -3,7 +3,7 @@ import java.io.InputStream;  //βιβλιοθήκη για εισαγωγή απ
 public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
     private final InputStream in;  //μεταβλητή εισόδου
     private int lookahead;  //int γιατί το in.read() διαβάζει μόνο int
-
+ 
     public Parser(InputStream in) throws IOException {  //ο κατασκευαστής 
         this.in = in;  //το this είναι της κλάσης ενώ το δεξιά in το όρισμα
         this.lookahead = in.read();  

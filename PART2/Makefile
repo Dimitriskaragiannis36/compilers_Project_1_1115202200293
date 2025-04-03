@@ -21,4 +21,5 @@ run:
 	java -cp "$(CUP_RUNTIME_JAR);." Main
 
 clean:
-	del /Q *.class sym.java Scanner.java Parser.java Parser2.java 2 Translated.ir Translated.java> NUL
+	del /Q *.class sym.java Scanner.java Scanner.java~ Parser.java Parser2.java 2 Translated.ir Translated.java> NUL
+	  

@@ -96,7 +96,7 @@ if_expr ::= if_expr_reverse: ifer    {: RESULT = ifer; :}
           | if_expr_string: ifes     {: RESULT = ifes; :}
           | if_expr_id: ifed         {: RESULT = ifed; :}
           ;
-
+   
 /* REVERSE-based conditions */
 if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
                       {: RESULT = "reverse " + str + " prefix reverse " + id; :}

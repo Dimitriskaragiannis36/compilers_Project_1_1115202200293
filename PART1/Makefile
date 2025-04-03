@@ -22,3 +22,4 @@ Parser.class: Parser.java
 #Καθαρισμός
 clean:
 	del *.class
+ 
