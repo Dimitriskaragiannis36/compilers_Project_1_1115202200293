@@ -71,14 +71,20 @@ fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd + "\n"; :}
 
 /* Function definitions */
 fun_def ::= ID:id LPAREN par_list:pl RPAREN LBRACE expr:e RBRACE
-            {: RESULT = id + "(" + pl + ") {\n  " + e + "\n}"; :}
+              {: RESULT = "  public static String " + id + "(" + pl + ") {\n" + 
+               "    return " + e + ";\n" + 
+               "  }\n"; 
+              :}
           | ID:id LPAREN RPAREN LBRACE expr:e RBRACE
-            {: RESULT = id + "() {\n  " + e + "\n}"; :}
+              {: RESULT = "  public static String " + id + "() {\n" + 
+               "    return " + e + ";\n" + 
+               "  }\n"; 
+              :}
         ;
 
 /* List of parameters */
-par_list ::= par:p                 {: RESULT = p; :}
-           | par_list:pl COMMA par:p  {: RESULT = pl + ", " + p; :}
+par_list ::= par:p                 {: RESULT = "String " + p; :}
+           | par_list:pl COMMA par:p  {: RESULT = pl + ", String " + p; :}
         ;
 
 /* Parameter */
