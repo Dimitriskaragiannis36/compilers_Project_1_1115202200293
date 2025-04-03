@@ -38,6 +38,9 @@ non terminal String expr2;
 non terminal String term_list;
 non terminal String term;
 non terminal String term2;
+non terminal String if_expr_reverse;
+non terminal String if_expr_string;
+non terminal String if_expr_id;
 
 
 
@@ -89,31 +92,43 @@ expr ::= STRING_LITERAL:str  {: RESULT = str; :}
        ; 
 
 /* IF expression conditions */
-if_expr ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
-              {: RESULT = "reverse(" + str + ") startsWith reverse(" + id + ")"; :}
-          | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
-              {: RESULT = "reverse(" + str + ") endsWith reverse(" + id + ")"; :}
-          | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
-              {: RESULT = "reverse(" + str + ") == reverse(" + id + ")"; :}
-          | STRING_LITERAL:str PREFIX ID:id  
-              {: RESULT = str + " startsWith " + id; :}
-          | STRING_LITERAL:str SUFFIX ID:id  
-              {: RESULT = str + " endsWith " + id; :}
-          | STRING_LITERAL:str EQUAL ID:id  
-              {: RESULT = str + " == " + id; :}
-          | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
-              {: RESULT = "reverse(" + id + ") startsWith reverse(" + str + ")"; :}
-          | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
-              {: RESULT = "reverse(" + id + ") endsWith reverse(" + str + ")"; :}
-          | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
-              {: RESULT = "reverse(" + id + ") == reverse(" + str + ")"; :}
-          | ID:id PREFIX STRING_LITERAL:str  
-              {: RESULT = id + " startsWith " + str; :}
-          | ID:id SUFFIX STRING_LITERAL:str  
-              {: RESULT = id + " endsWith " + str; :}
-          | ID:id EQUAL STRING_LITERAL:str  
-              {: RESULT = id + " == " + str; :}
-        ;
+if_expr ::= if_expr_reverse: ifer    {: RESULT = ifer; :}
+          | if_expr_string: ifes     {: RESULT = ifes; :}
+          | if_expr_id: ifed         {: RESULT = ifed; :}
+          ;
+
+/* REVERSE-based conditions */
+if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
+                      {: RESULT = "reverse(" + str + ") startsWith reverse(" + id + ")"; :}
+                  | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
+                      {: RESULT = "reverse(" + str + ") endsWith reverse(" + id + ")"; :}
+                  | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
+                      {: RESULT = "reverse(" + str + ") == reverse(" + id + ")"; :}
+                  | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
+                      {: RESULT = "reverse(" + id + ") startsWith reverse(" + str + ")"; :}
+                  | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
+                      {: RESULT = "reverse(" + id + ") endsWith reverse(" + str + ")"; :}
+                  | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
+                      {: RESULT = "reverse(" + id + ") == reverse(" + str + ")"; :}
+                  ;
+
+/* STRING_LITERAL-based conditions */
+if_expr_string ::= STRING_LITERAL:str PREFIX ID:id  
+                      {: RESULT = str + " startsWith " + id; :}
+                 | STRING_LITERAL:str SUFFIX ID:id  
+                      {: RESULT = str + " endsWith " + id; :}
+                 | STRING_LITERAL:str EQUAL ID:id  
+                      {: RESULT = str + " == " + id; :}
+                 ;
+
+/* ID-based conditions */
+if_expr_id ::= ID:id PREFIX STRING_LITERAL:str  
+                  {: RESULT = id + " startsWith " + str; :}
+             | ID:id SUFFIX STRING_LITERAL:str  
+                  {: RESULT = id + " endsWith " + str; :}
+             | ID:id EQUAL STRING_LITERAL:str  
+                  {: RESULT = id + " == " + str; :}
+             ;
 
 /* Expressions 2 */
 expr2 ::= STRING_LITERAL:str  {: RESULT = str; :}
