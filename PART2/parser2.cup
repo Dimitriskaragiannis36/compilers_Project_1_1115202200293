@@ -125,11 +125,11 @@ if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id
 
 /* STRING_LITERAL-based conditions */
 if_expr_string ::= STRING_LITERAL:str PREFIX ID:id  
-                      {: RESULT = str + " prefix " + id; :}
+                     {: RESULT = str + ".startsWith(" + id + ")"; :}
                  | STRING_LITERAL:str SUFFIX ID:id  
-                      {: RESULT = " reverse " + str + " prefix reverse " + id; :}
+                       {: RESULT = str + ".endsWith(" + id + ")"; :}
                  | STRING_LITERAL:str EQUAL ID:id  
-                      {: RESULT = " reverse" + str + " prefix reverse " + id + "&& reverse" + id + " prefix reverse " + str ; :}
+                        {: RESULT = str + ".equals(" + id + ")"; :}
                  ;
 
 /* ID-based conditions */
