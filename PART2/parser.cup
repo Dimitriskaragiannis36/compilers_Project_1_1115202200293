@@ -57,8 +57,8 @@ program ::= fun_list:fl fun_call:fc  {: RESULT = fl + "\n" + fc; :};
 
 /* -------------------FUNCTION DEFINITION PART------------ */
 /* Function definitions followed by functions definitions */
-fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd; :}
-          | fun_def:fd               {: RESULT = fd; :}
+fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd + "\n"; :}
+          | fun_def:fd               {: RESULT = fd + "\n"; :}
         ;
 
 /* Function definitions */
@@ -81,7 +81,7 @@ expr ::= STRING_LITERAL:str  {: RESULT = str; :}
        | ID:id               {: RESULT = id; :}
        | expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
        | IF LPAREN if_expr:cond RPAREN expr:e1 ELSE expr:e2  
-         {: RESULT = "if (" + cond + ")\n    " + e1 + " else " + e2; :}
+         {: RESULT = "if (" + cond + ")\n    " + e1 + "\n " + " else " + "\n    " + e2; :}
        | ID:id LPAREN expr2:ex RPAREN  
          {: RESULT = id + "(" + ex + ")"; :}
        | ID:id LPAREN RPAREN  
