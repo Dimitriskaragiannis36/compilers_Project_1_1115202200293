@@ -159,8 +159,8 @@ fun_call ::= term_list:tl  {: RESULT = tl; :}
             ;
 
 /* List of terms */
-term_list ::= term_list:tl term:t  {: RESULT = tl + "\n" + t; :}
-            | term:t               {: RESULT = t; :}
+term_list ::= term_list:tl term:t  {: RESULT = tl + "\n    System.out.println(" + t + ");"; :}
+            | term:t               {: RESULT = "    System.out.println(" + t + ");"; :}
             ;
 
 /* term */
