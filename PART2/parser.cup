@@ -99,17 +99,17 @@ if_expr ::= if_expr_reverse: ifer    {: RESULT = ifer; :}
 
 /* REVERSE-based conditions */
 if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
-                      {: RESULT = " reverse " + str + " prefix reverse " + id; :}
+                      {: RESULT = "reverse " + str + " prefix reverse " + id; :}
                   | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
-                      {: RESULT = " reverse reverse " + str + " prefix reverse reverse " + id; :}
+                      {: RESULT = "reverse reverse " + str + " prefix reverse reverse " + id; :}
                   | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
-                      {: RESULT = " reverse" + str + " prefix reverse " + id + "&& reverse" + id + " prefix reverse " + str ; :}
+                      {: RESULT = "reverse reverse" + str + " reverse prefix reverse " + id + "&& reverse reverse" + id + " reverse prefix reverse " + str ; :}
                   | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = " reverse" + id + " prefix reverse " + str; :}
+                      {: RESULT = "reverse" + id + " prefix reverse " + str; :}
                   | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = " reverse reverse " + id + " prefix reverse reverse " + str; :}
+                      {: RESULT = "reverse reverse " + id + " prefix reverse reverse " + str; :}
                   | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
-                      {: RESULT = " reverse reverse" + id + " reverse prefix reverse " + str + "&& reverse reverse" + str + " reverse prefix reverse " + id ; :}
+                      {: RESULT = "reverse reverse" + id + " reverse prefix reverse " + str + "&& reverse reverse" + str + " reverse prefix reverse " + id ; :}
                   ;
 
 /* STRING_LITERAL-based conditions */
@@ -127,7 +127,7 @@ if_expr_id ::= ID:id PREFIX STRING_LITERAL:str
              | ID:id SUFFIX STRING_LITERAL:str  
                   {: RESULT = " reverse " + id + " prefix reverse " + str; :}
              | ID:id EQUAL STRING_LITERAL:str  
-                  {: " reverse" + id + " prefix reverse " + str + "&& reverse" + str + " prefix reverse " + id ; :}
+                  {: RESULT = " reverse" + id + " prefix reverse " + str + "&& reverse" + str + " prefix reverse " + id ; :}
              ;
 
 /* Expressions 2 */
