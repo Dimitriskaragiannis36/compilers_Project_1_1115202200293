@@ -110,17 +110,17 @@ if_expr ::= if_expr_reverse: ifer    {: RESULT = ifer; :}
 
 /* REVERSE-based conditions */
 if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
-                      {: RESULT = "reverse " + str + " prefix reverse " + id; :}
+                      {: RESULT = "new StringBuilder(" + str + ").reverse().toString().startsWith(new StringBuilder(" + id + ").reverse().toString())"; :}
                   | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
-                      {: RESULT = "reverse reverse " + str + " prefix reverse reverse " + id; :}
+                      {: RESULT = "new StringBuilder(" + str + ").reverse().toString().endsWith(new StringBuilder(" + id + ").reverse().toString())"; :}
                   | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
-                      {: RESULT = "reverse reverse" + str + " reverse prefix reverse " + id + "&& reverse reverse" + id + " reverse prefix reverse " + str ; :}
+                      {: RESULT = "new StringBuilder(" + str + ").reverse().toString().equals(new StringBuilder(" + id + ").reverse().toString())"; :}
                   | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = "reverse" + id + " prefix reverse " + str; :}
+                      {: RESULT = "new StringBuilder(" + id + ").reverse().toString().startsWith(new StringBuilder(" + str + ").reverse().toString())"; :}
                   | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = "reverse reverse " + id + " prefix reverse reverse " + str; :}
+                      {: RESULT = "new StringBuilder(" + id + ").reverse().toString().endsWith(new StringBuilder(" + str + ").reverse().toString())"; :}
                   | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
-                      {: RESULT = "reverse reverse" + id + " reverse prefix reverse " + str + "&& reverse reverse" + str + " reverse prefix reverse " + id ; :}
+                      {: RESULT = "new StringBuilder(" + id + ").reverse().toString().equals(new StringBuilder(" + str + ").reverse().toString())"; :}
                   ;
 
 /* STRING_LITERAL-based conditions */
@@ -134,11 +134,11 @@ if_expr_string ::= STRING_LITERAL:str PREFIX ID:id
 
 /* ID-based conditions */
 if_expr_id ::= ID:id PREFIX STRING_LITERAL:str  
-                  {: RESULT = id + " prefix " + str; :}
+                  {: RESULT = id + ".startsWith(" + str + ")"; :}
              | ID:id SUFFIX STRING_LITERAL:str  
-                  {: RESULT = " reverse " + id + " prefix reverse " + str; :}
+                  {: RESULT = id + ".endsWith(" + str + ")"; :}
              | ID:id EQUAL STRING_LITERAL:str  
-                  {: RESULT = " reverse" + id + " prefix reverse " + str + "&& reverse" + str + " prefix reverse " + id ; :}
+                  {: RESULT = id + ".equals(" + str + ")"; :}
              ;
 
 /* Expressions 2 */
