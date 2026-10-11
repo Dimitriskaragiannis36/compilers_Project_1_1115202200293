@@ -1,171 +1,155 @@
-import java.io.IOException;  //βιβλιοθήκη για εξαίρεση-αν δεν την βάλω θα έχω θέμα
-import java.io.InputStream;  //βιβλιοθήκη για εισαγωγή από πληκτρολόγιο
-public class Parser {  //κυρίαρχη κλάση=όνομα αρχείου
-    private final InputStream in;  //μεταβλητή εισόδου
-    private int lookahead;  //int γιατί το in.read() διαβάζει μόνο int
- 
-    public Parser(InputStream in) throws IOException {  //ο κατασκευαστής 
-        this.in = in;  //το this είναι της κλάσης ενώ το δεξιά in το όρισμα
-        this.lookahead = in.read();  
+import java.io.IOException;
+import java.io.InputStream;
+
+public class Parser {
+    private final InputStream in;
+    private int lookahead;
+
+    public Parser(InputStream in) throws IOException {
+        this.in = in;
+        this.lookahead = in.read();
     }
 
-    //Ο συντακτικός αναλυτής
     public void parse() {
         try {
-            System.out.println("Εκκίνηση αριθμομηχανής");
-            skipWhitespace(); //μπορεί να έχω κενά στην αρχή
+            skipWhitespace();
             int result = exp();
-            skipWhitespace(); //μπορεί να έχω κενά και στο τέλος 
-            if (lookahead == -1 || lookahead == '\n'|| lookahead == '\r') { //για EOF σύμφωνα με project (newline or EOF)
-                System.out.println("Τέλος υπολογισμού");
-                System.out.println(result);  
+            skipWhitespace();
+            // Αν φτάσαμε στο τέλος της έκφρασης με επιτυχία
+            if (lookahead == -1 || lookahead == '\n' || lookahead == '\r') {
+                System.out.println(result);
             } else {
-                System.out.println("Σφάλμα");
-                error();  //συνάρτηση σφάλματος
-                
+                error(); // Αν περισσεύουν "σκουπίδια" στο τέλος (π.χ. 1 + 2 a)
             }
-        } catch (IOException e) {  
-            System.err.println("IO error: " + e.getMessage());  //εκτυπώνει το μήνυμα σφάλματος
+        } catch (IOException e) {
+            System.err.println("IO error: " + e.getMessage());
         }
     }
 
-    //Συνάρτηση προσπέρασης κενών
     private void skipWhitespace() throws IOException {
         while (Character.isWhitespace(lookahead) && lookahead != '\n' && lookahead != '\r') {
-            lookahead = in.read(); //για να τερματίζει ακόμα και με κενό στο τέλος
+            lookahead = in.read();
         }
     }
 
-    //Συνάρτηση για μετάβαση στον επόμενο χαρακτήρα 
     private void consume(int expected) throws IOException {
         skipWhitespace();
         if (lookahead == expected) {
-            System.out.printf("κατανάλωσα το %c\n", lookahead);
-            lookahead = in.read(); // δίνει το επόμενο τοκεν
-            if (lookahead == '\r') {  //αν είναι \r (Windows), διάβασε και το \n
-                lookahead = in.read(); //δίνει το επόμενο τοκεν
-            }    
+            lookahead = in.read();
+            if (lookahead == '\r') { // Διαχείριση Windows CRLF
+                lookahead = in.read();
+            }
         } else {
             error();
         }
     }
 
-    //Συνάρτηση σφάλαμτος
     private void error() {
-        System.err.println("parse error"); 
-        System.exit(1);  
+        System.err.println("parse error");
+        System.exit(1);
     }
 
-    //κανόνας (1)
     private int exp() throws IOException {
-        int value = term();   
-        return exp2(value); 
+        int value = term();
+        return exp2(value);
     }
 
-    //κανόνας (2,3,4) 
     private int exp2(int left) throws IOException {
         skipWhitespace();
         if (lookahead == '+' || lookahead == '-') {
             int op = lookahead;
-            consume(lookahead);  //καταναλώνει το σύμβολο + ή -
+            consume(lookahead);
             int right = term();
             if (op == '+') {
                 left += right;
             } else if (op == '-') {
                 left -= right;
-            } 
+            }
             return exp2(left);
         }
-        if (lookahead == -1 || lookahead == ')' || lookahead != '\n' || lookahead != '\r') {  //για το FOLLOW
+        // ΔΙΟΡΘΩΣΗ ΕΔΩ: Αλλαγή σε == για να ελέγχει σωστά το FOLLOW(exp2)
+        if (lookahead == -1 || lookahead == ')' || lookahead == '\n' || lookahead == '\r') {
             return left;
         }
         error();
         return 0;
     }
 
-    //κανόνας (5)
     private int term() throws IOException {
-        int value = factor();   
-        return term2(value); 
+        int value = factor();
+        return term2(value);
     }
 
-    //κανόνας (6,7)
     private int term2(int left) throws IOException {
         skipWhitespace();
         if (lookahead == '*') {
-            consume('*');  //καταναλώνω το πρώτο *
+            consume('*');
             if (lookahead == '*') {
-                consume('*');  //πρέπει να υπάρχει και δεύτερο *
-                int right = factor();  
-                right = term2(right); //για δεξιά προτεραιότητα
-                int pow = (int) Math.pow(left, right); //int γιατί γκρινιάζει 
-                return term2(pow);                
+                consume('*');
+                int right = factor();
+                right = term2(right); // Υπολογίζει όλη τη δεξιά μεριά (Right associativity)
+                return (int) Math.pow(left, right); // ΔΙΟΡΘΩΣΗ ΕΔΩ: Επιστρέφουμε απευθείας το αποτέλεσμα
             } else {
-                error();  //αν υπάρχει μόνο ένα *, είναι συντακτικό λάθος
+                error();
             }
         }
+        // Σωστός έλεγχος του FOLLOW(term2)
         if (!(lookahead == '+' || lookahead == '-' || lookahead == ')' || lookahead == -1 || lookahead == '\n' || lookahead == '\r')) {
             error();
         }
-        
         return left;
     }
 
-    //κανόνας (8,9)   
     private int factor() throws IOException {
         skipWhitespace();
         if (Character.isDigit(lookahead)) {
             return num();
         } else if (lookahead == '(') {
             consume('(');
-            int value = exp();  //ακολουθεί exp
+            int value = exp();
             skipWhitespace();
             if (lookahead == ')') {
                 consume(')');
             } else {
-                error(); //δεν είναι σίγουρο αν θα κλείσει η παρένθεση
-            } 
-            return value; 
+                error();
+            }
+            return value;
         } else {
-            error();  
-            return 0; 
+            error();
+            return 0;
         }
     }
 
-    //κανόνας (10) 
     private int num() throws IOException {
-        int value = digit(); 
-        return num2(value);  
+        int value = digit();
+        return num2(value);
     }
 
-    //κανόνας (11,12) 
     private int num2(int left) throws IOException {
         skipWhitespace();
-        if (Character.isDigit(lookahead)) {  
-            left = left * 10 + digit(); //παράθεση ψηφίων
-            return num2(left);  
+        if (Character.isDigit(lookahead)) {
+            left = left * 10 + digit();
+            return num2(left);
         }
-        return left; 
+        return left;
     }
 
-    //κανόνας (13-22)
     private int digit() throws IOException {
         skipWhitespace();
         if (!Character.isDigit(lookahead)) {
-            error();  
+            error();
         }
-        int value = lookahead - '0'; //μετατροπή συμβόλου σε αριθμό 
-        consume(lookahead);  
+        int value = lookahead - '0';
+        consume(lookahead);
         return value;
     }
 
-    //main
     public static void main(String[] args) {
         try {
-            Parser parser = new Parser(System.in);  // Δημιουργεί ένα νέο αντικείμενο Parser με είσοδο από το πληκτρολόγιο.
-            parser.parse();  //καλώ την συνάρτηση του parser
-        } catch (IOException e) {  
-            System.err.println("Πρόβλημα στην εκκίνηση του parser: " + e.getMessage());  
+            Parser parser = new Parser(System.in);
+            parser.parse();
+        } catch (IOException e) {
+            System.err.println("IO error: " + e.getMessage());
         }
     }
 }
