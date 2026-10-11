@@ -1,173 +1,105 @@
-/* Simple +/-/* expression language; parser evaluates constant expressions on the fly */
-/**
- *  Package and Import Specifications
- */
+/* Στάδιο 1: πηγαία γλώσσα  ->  IR (χωρίς το "=" και το "suffix") */
 import java_cup.runtime.*;
+import java.util.*;
 
-/**
- *  Usercode Components
- */
 parser code {:
-    // Connect this parser to a scanner!
     Scanner s;
     Parser(Scanner s) { this.s = s; }
+
+    List<String> defs = new ArrayList<String>();
+    List<String> calls = new ArrayList<String>();
+
+    static String describe(Symbol t) {
+        if (t.sym == sym.EOF) return "Syntax error: unexpected end of input";
+        String pos = t.left >= 0 ? " at line " + (t.left + 1) + ", column " + (t.right + 1) : "";
+        return "Syntax error" + pos + (t.value != null ? " near " + t.value : "");
+    }
+    public void syntax_error(Symbol cur) { throw new RuntimeException(describe(cur)); }
+    public void unrecovered_syntax_error(Symbol cur) { throw new RuntimeException(describe(cur)); }
 :};
 
-/* Define how to connect to the scanner */
 scan with {: return s.next_token(); :};
 
-/**
- *  Symbol Lists
- */
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL;
+terminal String STRING_LITERAL, ID;
 
-/* Terminals - (remember the scanner) */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL;
-terminal String STRING_LITERAL;
-terminal String ID;
-
-/* Non-terminals */
 non terminal String program;
-non terminal String fun_list;
-non terminal String fun_call;
-non terminal String fun_def;
-non terminal String par_list;
-non terminal String par;
-non terminal String expr;
-non terminal String if_expr;
-non terminal String expr2;
-non terminal String term_list;
-non terminal String term;
-non terminal String term2;
-non terminal String if_expr_reverse;
-non terminal String if_expr_string;
-non terminal String if_expr_id;
+non terminal items, item;
+non terminal Ex expr;
+non terminal Cond cond;
+non terminal java.util.List<Ex> args;
 
+/* Από τη χαμηλότερη προς την υψηλότερη: if < concat < reverse */
+precedence nonassoc IF, ELSE;
+precedence left CONCAT;
+precedence right REVERSE;
+/* Λύνει το "ID . LPAREN": μεταβλητή ή κλήση; (κλήση) */
+precedence nonassoc ID;
+precedence nonassoc LPAREN;
 
+start with program;
 
-/**
- *  Precedence Declarations
- */
-precedence left IF, ELSE;
-precedence left CONCAT; 
-precedence left REVERSE;
-precedence left COMMA;
+program ::= items
+    {:
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.join("\n\n", parser.defs));
+        if (!parser.defs.isEmpty() && !parser.calls.isEmpty()) sb.append("\n\n");
+        sb.append(String.join("\n", parser.calls));
+        RESULT = sb.toString();
+    :};
 
-/* Grammar Rules */
-
-/* Functions followed by function calls */
-program ::= fun_list:fl fun_call:fc  {: RESULT = fl + "\n" + fc; :};
-
-
-/* -------------------FUNCTION DEFINITION PART------------ */
-/* Function definitions followed by functions definitions */
-fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd + "\n"; :}
-          | fun_def:fd               {: RESULT = fd + "\n"; :}
+items ::= /* empty */
+        | items item
         ;
 
-/* Function definitions */
-fun_def ::= ID:id LPAREN par_list:pl RPAREN LBRACE expr:e RBRACE
-            {: RESULT = id + "(" + pl + ") {\n  " + e + "\n}"; :}
-          | ID:id LPAREN RPAREN LBRACE expr:e RBRACE
-            {: RESULT = id + "() {\n  " + e + "\n}"; :}
-        ;
+/* Ορισμός συνάρτησης ή top-level έκφραση. Μοιράζονται το πρόθεμα ID ( ... ) και
+   ξεχωρίζουν από το "{", ώστε να μην υπάρχει reduce/reduce conflict. */
+item ::= ID:id LPAREN args:a RPAREN LBRACE expr:body RBRACE
+    {:
+        if (!parser.calls.isEmpty())
+            throw new RuntimeException("Function " + id + ": definitions must precede all top-level expressions");
+        StringBuilder ps = new StringBuilder();
+        for (Ex x : a) {
+            if (!x.s.matches("[a-zA-Z_][a-zA-Z_0-9]*"))
+                throw new RuntimeException("Function " + id + ": invalid parameter '" + x.s + "'");
+            if (ps.length() > 0) ps.append(", ");
+            ps.append(x.s);
+        }
+        parser.defs.add(id + "(" + ps + ") {\n" + Ex.indent(body.s) + "\n}");
+    :}
+       | ID:id LPAREN RPAREN LBRACE expr:body RBRACE
+    {:
+        if (!parser.calls.isEmpty())
+            throw new RuntimeException("Function " + id + ": definitions must precede all top-level expressions");
+        parser.defs.add(id + "() {\n" + Ex.indent(body.s) + "\n}");
+    :}
+       | expr:e
+    {: parser.calls.add(e.s); :}
+       ;
 
-/* List of parameters */
-par_list ::= par:p                 {: RESULT = p; :}
-           | par_list:pl COMMA par:p  {: RESULT = pl + ", " + p; :}
-        ;
+args ::= expr:e                  {: RESULT = new ArrayList<Ex>(); RESULT.add(e); :}
+       | args:l COMMA expr:e     {: l.add(e); RESULT = l; :}
+       ;
 
-/* Parameter */
-par ::= ID:id  {: RESULT = id; :};
+expr ::= STRING_LITERAL:str      {: RESULT = new Ex(str, Ex.ATOM); :}
+       | ID:id                   {: RESULT = new Ex(id, Ex.ATOM); :}
+       | ID:id LPAREN RPAREN     {: RESULT = new Ex(id + "()", Ex.ATOM); :}
+       | ID:id LPAREN args:a RPAREN
+         {:
+            StringBuilder sb = new StringBuilder(id).append("(");
+            for (int i = 0; i < a.size(); i++) { if (i > 0) sb.append(", "); sb.append(a.get(i).s); }
+            RESULT = new Ex(sb.append(")").toString(), Ex.ATOM);
+         :}
+       | LPAREN expr:e RPAREN    {: RESULT = new Ex("(" + e.s + ")", Ex.ATOM); :}
+       | expr:a CONCAT expr:b
+         {: RESULT = new Ex(Ex.wrapIf(a).s + " + " + Ex.wrapIf(b).s, Ex.CAT); :}
+       | REVERSE expr:e
+         {: RESULT = new Ex("reverse " + Ex.wrapAtom(e).s, Ex.ATOM); :}
+       | IF LPAREN cond:c RPAREN expr:t ELSE expr:e
+         {: RESULT = c.toIf(t, e); :}
+       ;
 
-/* Expressions */
-expr ::= STRING_LITERAL:str  {: RESULT = str; :}
-       | ID:id               {: RESULT = id; :}
-       | expr:e1 CONCAT expr:e2  {: RESULT = e1 + " + " + e2; :}
-       | IF LPAREN if_expr:cond RPAREN expr:e1 ELSE expr:e2  
-         {: RESULT = "if (" + cond + ")\n    " + e1 + "\n " + " else " + "\n    " + e2; :}
-       | ID:id LPAREN expr2:ex RPAREN  
-         {: RESULT = id + "(" + ex + ")"; :}
-       | ID:id LPAREN RPAREN  
-         {: RESULT = id + "()"; :}
-       ; 
-
-/* IF expression conditions */
-if_expr ::= if_expr_reverse: ifer    {: RESULT = ifer; :}
-          | if_expr_string: ifes     {: RESULT = ifes; :}
-          | if_expr_id: ifed         {: RESULT = ifed; :}
-          ;
-   
-/* REVERSE-based conditions */
-if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
-                      {: RESULT = "reverse " + str + " prefix reverse " + id; :}
-                  | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
-                      {: RESULT = "reverse reverse " + str + " prefix reverse reverse " + id; :}
-                  | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
-                      {: RESULT = "reverse reverse" + str + " reverse prefix reverse " + id + "&& reverse reverse" + id + " reverse prefix reverse " + str ; :}
-                  | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = "reverse" + id + " prefix reverse " + str; :}
-                  | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = "reverse reverse " + id + " prefix reverse reverse " + str; :}
-                  | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
-                      {: RESULT = "reverse reverse" + id + " reverse prefix reverse " + str + "&& reverse reverse" + str + " reverse prefix reverse " + id ; :}
-                  ;
-
-/* STRING_LITERAL-based conditions */
-if_expr_string ::= STRING_LITERAL:str PREFIX ID:id  
-                      {: RESULT = str + " prefix " + id; :}
-                 | STRING_LITERAL:str SUFFIX ID:id  
-                      {: RESULT = " reverse " + str + " prefix reverse " + id; :}
-                 | STRING_LITERAL:str EQUAL ID:id  
-                      {: RESULT = " reverse" + str + " prefix reverse " + id + "&& reverse" + id + " prefix reverse " + str ; :}
-                 ;
-
-/* ID-based conditions */
-if_expr_id ::= ID:id PREFIX STRING_LITERAL:str  
-                  {: RESULT = id + " prefix " + str; :}
-             | ID:id SUFFIX STRING_LITERAL:str  
-                  {: RESULT = " reverse " + id + " prefix reverse " + str; :}
-             | ID:id EQUAL STRING_LITERAL:str  
-                  {: RESULT = " reverse" + id + " prefix reverse " + str + "&& reverse" + str + " prefix reverse " + id ; :}
-             ;
-
-/* Expressions 2 */
-expr2 ::= STRING_LITERAL:str  {: RESULT = str; :}
-        | ID:id LPAREN expr2:ex RPAREN  
-          {: RESULT = id + "(" + ex + ")"; :}
-        | expr2:e1 COMMA expr2:e2  
-          {: RESULT = e1 + ", " + e2; :}
-        | ID:id  
-          {: RESULT = id; :}
-        ;
-
-
-/* ------------------FUNCTION CALLS PART--------------------- */
-/* Function calls */
-fun_call ::= term_list:tl  {: RESULT = tl; :}
-            | /* empty */  {: RESULT = ""; :}
-            ;
-
-/* List of terms */
-term_list ::= term_list:tl term:t  {: RESULT = tl + "\n" + t; :}
-            | term:t               {: RESULT = t; :}
-            ;
-
-/* term */
-term ::= ID:id LPAREN term2:t2 RPAREN  
-          {: RESULT = id + "(" + t2 + ")"; :}
-        | ID:id LPAREN RPAREN  
-          {: RESULT = id + "()"; :}
-        ;
-
-/* term2 */
-term2 ::= term2:t2 COMMA STRING_LITERAL:str  
-           {: RESULT = t2 + ", " + str; :}
-         | term2:t2 COMMA term:t  
-           {: RESULT = t2 + ", " + t; :}
-         | STRING_LITERAL:str  
-           {: RESULT = str; :}
-         | term:t  
-           {: RESULT = t; :}
-         ;
- 
-
+cond ::= expr:a PREFIX expr:b    {: RESULT = new Cond(Cond.PREFIX, a, b); :}
+       | expr:a SUFFIX expr:b    {: RESULT = new Cond(Cond.SUFFIX, a, b); :}
+       | expr:a EQUAL expr:b     {: RESULT = new Cond(Cond.EQUAL, a, b); :}
+       ;

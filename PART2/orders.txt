@@ -1,17 +1,25 @@
-//ΓΙΑ LEXER
-java -jar C:\Users\dimit\Downloads\jflex-1.9.1\lib\jflex-full-1.9.1.jar scanner.flex
-java -jar C:\Users\dimit\Downloads\jflex-1.9.1\lib\jflex-full-1.9.1.jar scanner2.flex
+cd /home/dimitris/compilers_Project_1_1115202200293/PART2/
 
 
-//ΓΙΑ PARSER
-java -jar C:\Users\dimit\Downloads\java-cup-11b.jar -parser Parser -symbols sym parser.cup
-java -jar C:\Users\dimit\Downloads\java-cup-11b.jar -parser Parser2 -symbols sym2 parser2.cup
+# ΓΙΑ LEXER
+java -jar jflex-full-1.9.1.jar scanner.flex
+java -jar jflex-full-1.9.1.jar scanner2.flex
 
-//ΓΙΑ .JAVA
-javac -cp "C:\Users\dimit\Downloads\java-cup-11b-runtime.jar;." *.java
 
-//ΓΙΑ Main
-java -cp "C:\Users\dimit\Downloads\java-cup-11b-runtime.jar;." OK2
+# ΓΙΑ PARSER
+java -jar java-cup-11b.jar -parser Parser -symbols sym parser.cup
+java -jar java-cup-11b.jar -parser Parser2 -symbols sym2 parser2.cup
 
-java -cp "C:\Users\dimit\Downloads\java-cup-11b-runtime.jar;." Main
 
+# ΓΙΑ .JAVA
+javac -cp "java-cup-11b-runtime.jar:." *.java
+
+
+# ΓΙΑ Main
+java -cp "java-cup-11b-runtime.jar:." OK2
+
+java -cp "java-cup-11b-runtime.jar:." Main
+
+
+java -cp ".:java-cup-11b-runtime.jar" Main < input.txt
+javac Translated.java && java Translated

@@ -1,47 +1,68 @@
-name()  {
-  "John"
-} 
+empty() { "" }
 
-surname() {
-  "Doe"
-}  
-fullname(first_name, sep, last_name) {
-  first_name + sep + last_name
+twice(x) { x + x }
+
+rev(x) { reverse x }
+
+palindrome(s) {
+  if (s = reverse s) "yes" else "no"
 }
-name()
-surname()
-fullname(name(), " ", surname())
-name() {
-  "John"
+
+endsWithIng(s) {
+  if ("ing" suffix s) "ing-word" else "other"
 }
-repeat(x) {
-  x + x
-}
-cond_repeat(c, x) {
-  if ("?" suffix c)
-    repeat(x)
+
+classify(a, b) {
+  if (a = b)
+    if ("x" prefix a) "same-x" else "same"
   else
-    x
-}
-cond_repeat("yes", name())
-cond_repeat("no?", "Jane")
-
-findLangType(langName) {
-  if ("Java" prefix langName)
-    if(langName prefix "Java")
-      "Static"
+    if (a + b = b + a)
+      "commute"
     else
-      if("script" suffix langName)
-        "Dynamic"
-      else
-        "Unknown"
-      else
-        if ("script" = langName)
-          "Probably Dynamic"
-        else
-          "Unknown"
+      if ("ab" suffix a + b) "ends-ab" else "diff"
 }
 
-findLangType("Java")
-findLangType("Javascript")
-findLangType("Typescript")
+decorate(x) {
+  "[" + (if (x = "") "empty" else x) + "]"
+}
+
+pick(c, a, b) {
+  if (c = "go") a else b + "!"
+}
+
+mix(x) {
+  "<" + if ("a" prefix x) "A" else "N" + ">"
+}
+
+deep(a) {
+  reverse reverse reverse a + "|" + reverse (a + "!")
+}
+
+greet(n) {
+  "Γεια σου, " + n + "! \"quoted\"\ttab"
+}
+
+palindrome("level")
+palindrome("abc")
+palindrome("")
+endsWithIng("testing")
+endsWithIng("ing")
+endsWithIng("in")
+classify("x1", "x1")
+classify("a", "a")
+classify("", "")
+classify("a", "b")
+classify("ac", "bd")
+classify("aa", "a")
+decorate("")
+decorate("hi")
+pick("go", "A", "B")
+pick("stop", "A", "B")
+mix("abc")
+mix("zzz")
+deep("ab")
+twice(twice("ab"))
+rev(twice(rev("ab")))
+greet("κόσμε")
+twice(if ("a" prefix "ab") "yes" else "no")
+empty() + "end"

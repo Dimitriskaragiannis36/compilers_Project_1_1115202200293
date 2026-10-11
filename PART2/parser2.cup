@@ -1,185 +1,111 @@
-/* Simple +/-/* expression language; parser evaluates constant expressions on the fly */
-/**
- *  Package and Import Specifications
- */
+/* Στάδιο 2: IR  ->  Java.  Ίδια terminals (και σειρά) με τον parser.cup ώστε να συμφωνεί το sym.java */
 import java_cup.runtime.*;
+import java.util.*;
 
-/**
- *  Usercode Components
- */
 parser code {:
-    // Connect this parser to a scanner!
     Scanner s;
     Parser2(Scanner s) { this.s = s; }
+
+    List<String> methods = new ArrayList<String>();
+    List<String> mainBody = new ArrayList<String>();
+    boolean seenCall = false;
+
+    /* Το IR δεν επιτρέπει suffix και "=": οι αντίστοιχοι κανόνες υπάρχουν μόνο για να δώσουν σαφές σφάλμα. */
+    static String reject(String what) {
+        throw new RuntimeException("IR error: '" + what + "' is not allowed in the IR");
+    }
+
+    static String describe(Symbol t) {
+        if (t.sym == sym.EOF) return "IR syntax error: unexpected end of input";
+        String pos = t.left >= 0 ? " at line " + (t.left + 1) + ", column " + (t.right + 1) : "";
+        return "IR syntax error" + pos + (t.value != null ? " near " + t.value : "");
+    }
+    public void syntax_error(Symbol cur) { throw new RuntimeException(describe(cur)); }
+    public void unrecovered_syntax_error(Symbol cur) { throw new RuntimeException(describe(cur)); }
 :};
 
-/* Define how to connect to the scanner */
 scan with {: return s.next_token(); :};
 
-/**
- *  Symbol Lists
- */
+terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL;
+terminal String STRING_LITERAL, ID;
 
-/* Terminals - (remember the scanner) */
-terminal LPAREN, RPAREN, LBRACE, RBRACE, COMMA, CONCAT, IF, ELSE, SUFFIX, PREFIX, REVERSE, EQUAL, LOG_EQUAL;
-terminal String STRING_LITERAL;
-terminal String ID;
-
-/* Non-terminals */
 non terminal String program;
-non terminal String fun_list;
-non terminal String fun_call;
-non terminal String fun_def;
-non terminal String par_list;
-non terminal String par;
-non terminal String expr;
-non terminal String if_expr;
-non terminal String expr2;
-non terminal String term_list;
-non terminal String term;
-non terminal String term2;
-non terminal String if_expr_reverse;
-non terminal String if_expr_string;
-non terminal String if_expr_id;
+non terminal items, item;
+non terminal Ex expr;
+non terminal String cond;
+non terminal java.util.List<Ex> args;
 
+precedence nonassoc IF, ELSE;
+precedence left CONCAT;
+precedence right REVERSE;
+precedence nonassoc ID;
+precedence nonassoc LPAREN;
 
+start with program;
 
-/**
- *  Precedence Declarations
- */
-precedence left IF, ELSE;
-precedence left CONCAT; 
-precedence left REVERSE;
-precedence left COMMA;
+program ::= items
+    {:
+        StringBuilder sb = new StringBuilder();
+        sb.append("public class Translated {\n");
+        sb.append("  public static void main(String[] args) {\n");
+        for (String l : parser.mainBody) sb.append("    System.out.println(").append(l).append(");\n");
+        sb.append("  }\n");
+        for (String m : parser.methods) sb.append("\n").append(m);
+        sb.append("}\n");
+        RESULT = sb.toString();
+    :};
 
-/* Grammar Rules */
-
-/* Functions followed by function calls */
-program ::= fun_list:fl fun_call:fc  
-  {: 
-    RESULT = "public class Translated {\n" +
-             "  public static void main(String[] args) {\n" +
-             fc + "  }\n\n" + fl + "}";
-  :};
-
-
-/* -------------------FUNCTION DEFINITION PART------------ */
-/* Function definitions followed by functions definitions */
-fun_list ::= fun_list:fl fun_def:fd  {: RESULT = fl + "\n" + fd + "\n"; :}
-          | fun_def:fd               {: RESULT = fd + "\n"; :}
+items ::= /* empty */
+        | items item
         ;
 
-/* Function definitions */
-fun_def ::= ID:id LPAREN par_list:pl RPAREN LBRACE expr:e RBRACE
-              {: RESULT = "  public static String " + id + "(" + pl + ") {\n" + 
-                e + "\n" + 
-               "  }\n"; 
-              :}
-          | ID:id LPAREN RPAREN LBRACE expr:e RBRACE
-              {: RESULT = "  public static String " + id + "() {\n" + 
-                e + "\n" + 
-               "  }\n"; 
-              :}
-        ;
+item ::= ID:id LPAREN args:a RPAREN LBRACE expr:body RBRACE
+    {:
+        if (!parser.mainBody.isEmpty())
+            throw new RuntimeException("Function " + id + ": definitions must precede all top-level expressions");
+        StringBuilder ps = new StringBuilder();
+        for (Ex x : a) {
+            if (!x.s.matches("[a-zA-Z_][a-zA-Z_0-9]*"))
+                throw new RuntimeException("Function " + id + ": invalid parameter '" + x.s + "'");
+            if (ps.length() > 0) ps.append(", ");
+            ps.append("String ").append(x.s);
+        }
+        parser.methods.add("  public static String " + id + "(" + ps + ") {\n    return " + body.s + ";\n  }\n");
+    :}
+       | ID:id LPAREN RPAREN LBRACE expr:body RBRACE
+    {:
+        if (!parser.mainBody.isEmpty())
+            throw new RuntimeException("Function " + id + ": definitions must precede all top-level expressions");
+        parser.methods.add("  public static String " + id + "() {\n    return " + body.s + ";\n  }\n");
+    :}
+       | expr:e
+    {: parser.mainBody.add(e.s); :}
+       ;
 
-/* List of parameters */
-par_list ::= par:p                 {: RESULT = "String " + p; :}
-           | par_list:pl COMMA par:p  {: RESULT = pl + ", String " + p; :}
-        ;
+args ::= expr:e                  {: RESULT = new ArrayList<Ex>(); RESULT.add(e); :}
+       | args:l COMMA expr:e     {: l.add(e); RESULT = l; :}
+       ;
 
-/* Parameter */
-par ::= ID:id  {: RESULT = id; :};
+expr ::= STRING_LITERAL:str      {: RESULT = new Ex(str, Ex.ATOM); :}
+       | ID:id                   {: RESULT = new Ex(id, Ex.ATOM); :}
+       | ID:id LPAREN RPAREN     {: RESULT = new Ex(id + "()", Ex.ATOM); :}
+       | ID:id LPAREN args:a RPAREN
+         {:
+            StringBuilder sb = new StringBuilder(id).append("(");
+            for (int i = 0; i < a.size(); i++) { if (i > 0) sb.append(", "); sb.append(a.get(i).s); }
+            RESULT = new Ex(sb.append(")").toString(), Ex.ATOM);
+         :}
+       | LPAREN expr:e RPAREN    {: RESULT = new Ex("(" + e.s + ")", Ex.ATOM); :}
+       | expr:a CONCAT expr:b
+         {: RESULT = new Ex(Ex.wrapIf(a).s + " + " + Ex.wrapIf(b).s, Ex.CAT); :}
+       | REVERSE expr:e
+         {: RESULT = new Ex("new StringBuilder(" + e.s + ").reverse().toString()", Ex.ATOM); :}
+       | IF LPAREN cond:c RPAREN expr:t ELSE expr:e
+         {: RESULT = new Ex(c + " ? " + Ex.wrapIf(t).s + " : " + e.s, Ex.IF); :}
+       ;
 
-/* Expressions */
-expr ::= STRING_LITERAL:str  {: RESULT = "    return " + str + ";"; :}
-       | ID:id               {: RESULT = "    return " + id; :}
-       | expr:e1 CONCAT expr:e2  {: RESULT = "    return " + e1.replace("    return ", "").replace(";", "") + 
-                           " + " + e2.replace("    return ", "") + ";"; :}
-       | IF LPAREN if_expr:cond RPAREN expr:e1 ELSE expr:e2  
-         {: RESULT = "if (" + cond + ") {\n    return " + e1 + ";\n  } else {\n" + e2 + ";\n  }"; :}
-       | ID:id LPAREN expr2:ex RPAREN  
-         {: RESULT = id + "(" + ex + ")"; :}
-       | ID:id LPAREN RPAREN  
-         {: RESULT = id + "()"; :}
-       ; 
-
-/* IF expression conditions */
-if_expr ::= if_expr_reverse: ifer    {: RESULT = ifer; :}
-          | if_expr_string: ifes     {: RESULT = ifes; :}
-          | if_expr_id: ifed         {: RESULT = ifed; :}
-          ;
-
-/* REVERSE-based conditions */
-if_expr_reverse ::= REVERSE STRING_LITERAL:str PREFIX REVERSE ID:id  
-                      {: RESULT = "new StringBuilder(" + str + ").reverse().toString().startsWith(new StringBuilder(" + id + ").reverse().toString())"; :}
-                  | REVERSE STRING_LITERAL:str SUFFIX REVERSE ID:id  
-                      {: RESULT = "new StringBuilder(" + str + ").reverse().toString().endsWith(new StringBuilder(" + id + ").reverse().toString())"; :}
-                  | REVERSE STRING_LITERAL:str EQUAL REVERSE ID:id  
-                      {: RESULT = "new StringBuilder(" + str + ").reverse().toString().equals(new StringBuilder(" + id + ").reverse().toString())"; :}
-                  | REVERSE ID:id PREFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = "new StringBuilder(" + id + ").reverse().toString().startsWith(new StringBuilder(" + str + ").reverse().toString())"; :}
-                  | REVERSE ID:id SUFFIX REVERSE STRING_LITERAL:str  
-                      {: RESULT = "new StringBuilder(" + id + ").reverse().toString().endsWith(new StringBuilder(" + str + ").reverse().toString())"; :}
-                  | REVERSE ID:id EQUAL REVERSE STRING_LITERAL:str  
-                      {: RESULT = "new StringBuilder(" + id + ").reverse().toString().equals(new StringBuilder(" + str + ").reverse().toString())"; :}
-                  ;
-
-/* STRING_LITERAL-based conditions */
-if_expr_string ::= STRING_LITERAL:str PREFIX ID:id  
-                     {: RESULT = str + ".startsWith(" + id + ")"; :}
-                 | STRING_LITERAL:str SUFFIX ID:id  
-                       {: RESULT = str + ".endsWith(" + id + ")"; :}
-                 | STRING_LITERAL:str EQUAL ID:id  
-                        {: RESULT = str + ".equals(" + id + ")"; :}
-                 ;
-
-/* ID-based conditions */
-if_expr_id ::= ID:id PREFIX STRING_LITERAL:str  
-                  {: RESULT = id + ".startsWith(" + str + ")"; :}
-             | ID:id SUFFIX STRING_LITERAL:str  
-                  {: RESULT = id + ".endsWith(" + str + ")"; :}
-             | ID:id EQUAL STRING_LITERAL:str  
-                  {: RESULT = id + ".equals(" + str + ")"; :}
-             ;
-
-/* Expressions 2 */
-expr2 ::= STRING_LITERAL:str  {: RESULT = str; :}
-        | ID:id LPAREN expr2:ex RPAREN  
-          {: RESULT = id + "(" + ex + ")"; :}
-        | expr2:e1 COMMA expr2:e2  
-          {: RESULT = e1 + ", " + e2; :}
-        | ID:id  
-          {: RESULT = id; :}
-        ;
-
-
-/* ------------------FUNCTION CALLS PART--------------------- */
-/* Function calls */
-fun_call ::= term_list:tl  {: RESULT = tl; :}
-            | /* empty */  {: RESULT = ""; :}
-            ;
-
-/* List of terms */
-term_list ::= term_list:tl term:t  {: RESULT = tl + "\n    System.out.println(" + t + ");"; :}
-            | term:t               {: RESULT = "    System.out.println(" + t + ");"; :}
-            ;
-
-/* term */
-term ::= ID:id LPAREN term2:t2 RPAREN  
-          {: RESULT = id + "(" + t2 + ")"; :}
-        | ID:id LPAREN RPAREN  
-          {: RESULT = id + "()"; :}
-        ;
-
-/* term2 */
-term2 ::= term2:t2 COMMA STRING_LITERAL:str  
-           {: RESULT = t2 + ", " + str; :}
-         | term2:t2 COMMA term:t  
-           {: RESULT = t2 + ", " + t; :}
-         | STRING_LITERAL:str  
-           {: RESULT = str; :}
-         | term:t  
-           {: RESULT = t; :}
-         ;
- 
-
+/* a prefix b  =  "το a είναι πρόθεμα του b"  =  b.startsWith(a) */
+cond ::= expr:a PREFIX expr:b    {: RESULT = Ex.wrapAtom(b).s + ".startsWith(" + a.s + ")"; :}
+       | expr SUFFIX expr        {: RESULT = Parser2.reject("suffix"); :}
+       | expr EQUAL expr         {: RESULT = Parser2.reject("="); :}
+       ;
